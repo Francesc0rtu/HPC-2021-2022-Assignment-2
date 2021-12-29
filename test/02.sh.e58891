@@ -1,5 +1,0 @@
-loading dependency gnu/9.3.0
-loading dependency numactl/2.0.13
-loading dependency hwloc/2.2.0
-/var/spool/pbs/mom_priv/jobs/58891.login.hpc.SC: line 8: syntax error near unexpected token `<<<'
-/var/spool/pbs/mom_priv/jobs/58891.login.hpc.SC: line 8: `<<<<<<< HEAD'
