@@ -12,7 +12,7 @@ int main(int argc, char *argv[]){
   #pragma omp parallel
     {
     printf("ciao, io sono il thread %d con rank %d \n", omp_get_thread_num(), rank);
-    printf("provided=%d \n", provided);
+    
     }
 
   MPI_Finalize();
