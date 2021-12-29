@@ -1,0 +1,8 @@
+loading dependency gnu/9.3.0
+loading dependency numactl/2.0.13
+loading dependency hwloc/2.2.0
+hybrid_OMPI_OMP.c: In function ‘main’:
+hybrid_OMPI_OMP.c:16:19: warning: implicit declaration of function ‘sched_getcpu’; did you mean ‘sched_getparam’? [-Wimplicit-function-declaration]
+   16 |     int cpu_num = sched_getcpu();
+      |                   ^~~~~~~~~~~~
+      |                   sched_getparam
