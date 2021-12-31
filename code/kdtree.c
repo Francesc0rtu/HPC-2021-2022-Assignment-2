@@ -81,19 +81,20 @@ void parallel_sort(data_type* dataset, int dim){
   data_type cell;
   MPI_Aint base_address;
   MPI_Get_address(&cell, &base_address);                                          //Calculate the displacements
-  MPI_Get_address(&cell.x, &displacements[0]);                                    //
-  MPI_Get_address(&cell.y, &displacements[1]);                                    //
+  MPI_Get_address(&cell.x, &displacements[0]);                                    //i.e. Calculate the size in bytes of
+  MPI_Get_address(&cell.y, &displacements[1]);                                    // each block, in this case MPI_FLOAT_T
   displacements[0] = MPI_Aint_diff(displacements[0], base_address);               //
   displacements[1] = MPI_Aint_diff(displacements[1], base_address);               //
   MPI_Datatype types[2] = { MPI_FLOAT_T, MPI_FLOAT_T};
 
-  MPI_Type_create_struct(2, block_length, displacements, types, &MPI_DATA_TYPE);
-  MPI_Type_commit(&MPI_DATA_TYPE);
+  MPI_Type_create_struct(2, block_length, displacements, types, &MPI_DATA_TYPE);  // Create the datatype and set ad available
+  MPI_Type_commit(&MPI_DATA_TYPE);                                                //
 
 /// Compute the dimension of each part to send and sending with MPI_Scatterv ///
   int my_rank, size;
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);                                        // Get rank and size
   MPI_Comm_size(MPI_COMM_WORLD, &size);
+
   data_type* buffer_rcv;
   int count_send[size], count_recv, displacement[size];
   for(int i=0; i< size - 1; i++){                                                // Set the number of elements to send of each processors
@@ -103,12 +104,14 @@ void parallel_sort(data_type* dataset, int dim){
   count_send[size-1] = (int) dim/size + dim%size ;
   displacement[size-1] = count_send[size-2]*(size-1);
   count_recv = count_send[my_rank];
-  buffer_rcv = malloc(sizeof(data_type)*count_send[my_rank]);
+  buffer_rcv = malloc(sizeof(data_type)*count_send[my_rank]);                    // Allocate the memory for the rcv buffer of each mpi process
+
   for(int i=0; i<size; i++){
     printf(" (%d / %d ) ", displacement[i], count_send[i]);
   } printf("\n");
 
-   MPI_Scatterv(dataset, count_send, displacement, MPI_DATA_TYPE, buffer_rcv, count_recv, MPI_DATA_TYPE, MASTER, MPI_COMM_WORLD);
+   MPI_Scatterv(dataset, count_send, displacement, MPI_DATA_TYPE, buffer_rcv, count_recv, MPI_DATA_TYPE, MASTER, MPI_COMM_WORLD);   // Send at each mpi process a part of the datset
+
    if(my_rank == 3){
      print_data_set(buffer_rcv, count_recv);
    }
