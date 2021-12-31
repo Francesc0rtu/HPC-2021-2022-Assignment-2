@@ -4,6 +4,17 @@
 #include <omp.h>
 #include<time.h>
 
+///////////////// note-idee ///////////////////////////////////////////////////////////////
+// L'idea principale è di dividere il data-set in due vettori, uno per x e
+// uno per le y. Ordinare questi due vettori e procedere come se fosse uno solo, rompendo
+// la corrispondenza 1-1 tra indice e x, y. Ovvero se i punti sono  (x_assis[i], y_assis[i])
+// rompo la corrispondenza unendoli.
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 ///////////////////////////// MACRO /////////////////////////////
 
 #if !defined(DOUBLE_PRECISION)
@@ -115,5 +126,5 @@ void parallel_sort(data_type* dataset, int dim){
    if(my_rank == 3){
      print_data_set(buffer_rcv, count_recv);
    }
-
+  MPI_Gatherv
 }
