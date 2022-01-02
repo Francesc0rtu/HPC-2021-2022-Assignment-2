@@ -45,7 +45,7 @@ float_t y;
 
 data_type* initialize_random_dataset_serial(int dim);
 void print_data_set(data_type* data, int dim);
-void parallel_sort(data_type* dataset, int dim);
+void parallel_sort(data_type* dataset, int dim, data_type** data_x, data_type** data_y);
 data_type* merge_x(data_type* data_1,int dim_1, data_type* data_2, int dim_2);
 data_type* merge_y(data_type* data_1,int dim_1, data_type* data_2, int dim_2);
 void multi_thread_mergesort_y(data_type* data, int left, int right);
@@ -62,12 +62,15 @@ int main(int argc, char *argv[]){
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
   int dim = atoi(argv[1]);                                                       // initialize the dimension of the input                                                                                // the data set will be a square of dim x dim point
-  data_type *dataset;                                                            // pointer to the dataset
+  data_type *dataset,  *data_x, *data_y;                                                            // pointer to the dataset
   if(my_rank == MASTER){                                                              // Master processor init the data set
     dataset = initialize_random_dataset_serial(dim);                             // Initialize the dataset
     print_data_set(dataset, dim);
   }
-  parallel_sort(dataset, dim);                                             // Sort in parallel the dataset
+  parallel_sort(dataset, dim, &data_x, &data_y);                                             // Sort in parallel the dataset
+  if(my_rank == MASTER){
+    print_data_set(data_x, dim);
+  }
   MPI_Finalize();
 }
 
@@ -79,8 +82,8 @@ data_type* initialize_random_dataset_serial(int dim){                           
   data = malloc(sizeof(data_type)*dim);
   srand(time(NULL));
   for(int i=0; i<dim; i++){
-    data[i].x = (int)rand()/100000;
-    data[i].y = (int)rand()/100000;
+    data[i].x = (float_t)rand()/100000;
+    data[i].y = (float_t)rand()/100000;
   }
   return data;
 }
@@ -100,7 +103,7 @@ void print_data_set(data_type* data, int dim){                                  
 // to the master their part sorted
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-void parallel_sort(data_type* dataset, int dim){
+void parallel_sort(data_type* dataset, int dim, data_type** data_x, data_type** data_y){
 /// Create a MPI data type for send at each processor a part of the dataset/////
   MPI_Datatype MPI_DATA_TYPE;
   MPI_Status status;
@@ -133,19 +136,17 @@ void parallel_sort(data_type* dataset, int dim){
   displacement[size-1] = count_send[size-2]*(size-1);
   data_partial_x = malloc(sizeof(data_type)*count_send[my_rank]);                    // Allocate the memory for the rcv buffer of each mpi process
   data_partial_y = malloc(sizeof(data_type)*count_send[my_rank]);
-  for(int i=0; i<size; i++){
-    printf(" (%d / %d ) ", displacement[i], count_send[i]);
-  } printf("\n");
+
 
    MPI_Scatterv(dataset, count_send, displacement, MPI_DATA_TYPE, data_partial_x, count_send[my_rank], MPI_DATA_TYPE, MASTER, MPI_COMM_WORLD);   // Send at each mpi process a part of the datset
+
    for(int i=0; i<count_send[my_rank]; i++){
      data_partial_y[i] = data_partial_x[i];
    }
 
-//////////////////////////////7 tree based merge-sort //////////////////////////////////////////////////
   multi_thread_mergesort_x(data_partial_x,0, count_send[my_rank]-1);
   multi_thread_mergesort_y(data_partial_y,0, count_send[my_rank]-1);
-  print_data_set(data_partial_y, count_send[my_rank]);
+
 
   int step=1;
   int check = FALSE;
@@ -154,36 +155,33 @@ void parallel_sort(data_type* dataset, int dim){
     if(my_rank%(2*step)==0){
       if(my_rank + step < size){
         data_type* other_x, *other_y;
-        printf("RANK=%d, STEP=%d, COUNT_SEND=%d\n", my_rank, step, count_send[my_rank+step]);
+        MPI_Recv(&count_send[my_rank+step],1, MPI_INT,my_rank+step,0,MPI_COMM_WORLD,&status );
+
         other_x = malloc(sizeof(data_type)*count_send[my_rank+step]);
         other_y = malloc(sizeof(data_type)*count_send[my_rank+step]);
+
         MPI_Recv(other_x, count_send[my_rank+step], MPI_DATA_TYPE, my_rank+step, 0, MPI_COMM_WORLD, &status);
         MPI_Recv(other_y, count_send[my_rank+step], MPI_DATA_TYPE, my_rank+step, 0, MPI_COMM_WORLD, &status);
+
         data_partial_x = merge_x(data_partial_x, count_send[my_rank], other_x, count_send[my_rank+step]);
         data_partial_y = merge_y(data_partial_y, count_send[my_rank], other_y, count_send[my_rank+step]);
+
         count_send[my_rank] = count_send[my_rank]+count_send[my_rank+step];
-        printf("MYcountSend[%d]=%d\n",my_rank, count_send[my_rank]);
-        free(other_x);
-        free(other_y);
-        print_data_set(data_partial_x, count_send[my_rank]);
-
-
       }
     }else if(check == FALSE){
-      printf("RANK=%d, STEP=%d ----------- %d\n", my_rank,step, 2%8);
+      MPI_Send(&count_send[my_rank], 1, MPI_INT, my_rank-step, 0, MPI_COMM_WORLD);
       MPI_Send(data_partial_x, count_send[my_rank],MPI_DATA_TYPE, my_rank-step,0, MPI_COMM_WORLD);
       MPI_Send(data_partial_y, count_send[my_rank],MPI_DATA_TYPE, my_rank-step,0, MPI_COMM_WORLD);
       check = TRUE;
     }
     step = step*2;
   }
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  // MPI_Gatherv(data_partial_x, count_send[my_rank], MPI_DATA_TYPE,dataset, count_send, displacement, MPI_DATA_TYPE, MASTER, MPI_COMM_WORLD);
-
+  if(my_rank != MASTER){
+      free(data_partial_x);
+      free(data_partial_y);
+  }
+  *data_x = data_partial_x;
+  *data_y = data_partial_y;
 
 
 }
@@ -212,6 +210,8 @@ data_type* merge_x(data_type* data_1,int dim_1, data_type* data_2, int dim_2){
     (data_merged[k]) = (data_2[j]);
     j++; k++;
   }
+  free(data_1);
+  free(data_2);
   return data_merged;
 }
 
@@ -239,6 +239,8 @@ data_type* merge_y(data_type* data_1,int dim_1, data_type* data_2, int dim_2){
     data_merged[k] = data_2[j];
     j++; k++;
   }
+  free(data_1);
+  free(data_2);
   return data_merged;
 }
 
