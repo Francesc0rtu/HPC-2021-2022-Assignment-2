@@ -87,20 +87,16 @@ node* build_mpi_tree(data* set, int dim){
     printf(":----------\n ");
     print(set, dim);
     sleep(1);
-  #pragma omp parallel
-    {
-      #pragma omp single
-      root = build_omp_tree(set, 0, dim-1, 1-split);
-    }
-    print_ktree(root);
-    printf("\n");
-    sleep(1);
-    Print_ktree_(root);
-    printf("\n");
+  // #pragma omp parallel
+  //   {
+  //     #pragma omp single
+      root = build_omp_tree(set, 0, dim-1, 1-split, 0);
+    // }
+    print_ktree_ascii(root, 0);
+    printf("------------------------------ \n");
     knode* array_tree;
     array_tree = tree_to_array(root, dim);
-
-}
+  }
 
 
 }

@@ -1,12 +1,52 @@
 #include "utilities.h"
+#define COUNT 10
 
 
+/////////////////// PRINT FUNCTIONS ////////////////////
 
 void print(data* set, int dim){
   for (size_t i = 0; i < dim; i++) {
     printf("(%d,%d), ", set[i].x, set[i].y);
   }printf("\n");
 }
+
+void print_ktree(knode* root){
+  if(root!=NULL){
+    printf("{(%d,%d),%d, %d} ", (root->value).x, (root->value).y, root->AxSplit, root->dep );
+    print_ktree(root->left);
+    print_ktree(root->right);
+  }
+}
+
+void print_ktree_ascii(knode *root, int space){
+  // Base case
+  if (root == NULL)
+      return;
+
+  // Increase distance between levels
+  space += COUNT;
+
+  // Process right child first
+  print_ktree_ascii(root->right, space);
+
+  // Print current node after space
+  // count
+  printf("\n");
+  for (int i = COUNT; i < space; i++)
+      printf(" ");
+  printf("[(%d,%d),%d]\n", (root->value).x, (root->value).y, root->AxSplit);
+
+  // Process left child
+  print_ktree_ascii(root->left, space);
+}
+
+void print_array_knode(knode* array, int dim){
+  for(int i=0; i<dim; i++){
+    printf("(%d,%d), ", (array[i].value).x, (array[i].value).y );
+  }
+}
+
+//////////////////// TO COMPUTE SPLIT AND REORGANIZE DATA ////////
 
 void find_max_min(data* max,data* min, data* set, int dim){
   *max = set[0];
@@ -36,7 +76,8 @@ int split_and_sort(data* set, data max, data min, int left, int right, int ax){
   data *aux;
   aux = malloc(sizeof(data)*(right - left + 1));
   if(ax == X){
-    target = (max.x-min.x)/2;
+    target = (max.x-min.x)/2 + min.x;
+    // printf("target %d \n", target);
     for(int i=left; i<=right; i++){
       if(dist(set[i].x, target) < dist(set[index].x, target)){
         index = i;
@@ -56,7 +97,8 @@ int split_and_sort(data* set, data max, data min, int left, int right, int ax){
   }
 
   if(ax == Y){
-    target = (max.y-min.y)/2;
+    target = (max.y-min.y)/2 + min.y;
+    // printf("target %d \n", target);
     for(int i=left; i<=right; i++){
       if(dist(set[i].y, target) < dist(set[index].y, target)){
         index = i;
@@ -89,18 +131,38 @@ float_t dist(float_t x, float_t y){
   else return x-y;
 }
 
-void print_ktree(knode* root){
-  if(root!=NULL){
-    printf("{(%d,%d),%d} ", (root->value).x, (root->value).y, root->AxSplit );
-    print_ktree(root->left);
-    print_ktree(root->right);
+
+/////////////////// TREE TO ARRAY AND VICEVERSA /////////////////////
+
+knode* tree_to_array(knode* root, int dim){
+  knode *array;
+  array = malloc(sizeof(knode)*dim);
+  int i=0;
+  map_to_array(array,root,dim,0);
+  // print_array_knode(array,dim);
+  return array;
+}
+
+void map_to_array(knode* array, knode* root, int dim, int i){
+  if(i<dim){
+    if(root!=NULL){
+      array[i] = *root;
+      map_to_array(array, root->left, dim, i+1);
+      map_to_array(array, root->right, dim, i+1);
+    }
   }
 }
 
-void Print_ktree_(knode* root){
-  if(root!=NULL){
-    printf("(%d,%d), ", (root->value).x, (root->value).y );
-    Print_ktree_(root->left);
-    Print_ktree_(root->right);
-  }
+knode* array_to_tree(knode* array, int dim){
+  knode* root;
+  int i;
+  map_to_tree(array, root, dim, i);
 }
+
+void map_to_tree(knode* array, knode* root, int dim, int i){
+
+}
+
+// void merge_array_tree(knode* merge, knode* subleft, knode *subright, int dimlh, int dimrh){
+//
+// }

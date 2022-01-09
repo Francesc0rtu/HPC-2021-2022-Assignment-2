@@ -41,6 +41,7 @@ int right;
 typedef struct L {
 data value;
 int AxSplit;
+int dep;
 struct L *left;
 struct L *right;
 } knode;
@@ -53,4 +54,8 @@ int split_and_sort(data* set, data min, data max, int left, int right, int ax);
 float_t dist(float_t x, float_t y);
 void swap(data* x, data* y);
 void print_ktree(knode* root);
-void Print_ktree_(knode* root);
+void print_array_knode(knode* array, int dim);
+knode* tree_to_array(knode* root, int dim);
+void map_to_array(knode* array, knode* root, int dim, int i);
+void map_to_tree(knode* array, knode* root, int dim, int i);
+void print_ktree_ascii(knode* root, int space);

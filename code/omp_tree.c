@@ -1,11 +1,13 @@
 #include "utilities.h"
-
-knode* build_omp_tree(data* set,int left,int right,int ax){
+#include <unistd.h>
+knode* build_omp_tree(data* set,int left,int right,int ax, int depth){
+  printf("sono in functions left=%d, right=%d \n", left, right);
   if(left==right){
     knode* tmp;
     tmp = malloc(sizeof(knode));
     tmp->value = set[left];
     tmp -> AxSplit = ax;
+    tmp -> dep = depth;
     tmp -> left = NULL;
     tmp -> right = NULL;
     return tmp;
@@ -20,14 +22,16 @@ knode* build_omp_tree(data* set,int left,int right,int ax){
   tmp = malloc(sizeof(knode));
   find_max_min(&max, &min, set+left , right-left +1);
   index_split = split_and_sort(set, max ,min, left, right, ax);
-  printf("// node=(%d,%d), axis=%d, max=(%d,%d), min=(%d,%d) \n",
-        set[index_split].x,set[index_split].y,ax,max.x,max.y,min.x,min.y);
+  // printf("// node=(%d,%d), axis=%d, max=(%d,%d), min=(%d,%d) \n",
+        // set[index_split].x,set[index_split].y,ax,max.x,max.y,min.x,min.y);
   tmp->value = set[index_split];
   tmp->AxSplit = ax;
-#pragma omp task firstprivate(set,left,right,index_split,ax)
-  tmp->left = build_omp_tree(set, left, index_split-1, 1-ax);
-#pragma omp task firstprivate(set,left,right,index_split,ax)
-  tmp->right = build_omp_tree(set, index_split+1, right, 1-ax);
+  tmp->dep = depth;
+  printf("~~~~~depth %d (%d,%d) index=%d \n", depth, (tmp->value).x, (tmp->value).y, index_split);
+// #pragma omp task firstprivate(set,left,right,index_split,ax, depth)
+  tmp->left = build_omp_tree(set, left, index_split-1, 1-ax, depth+1);
+// #pragma omp task firstprivate(set,left,right,index_split,ax, depth)
+  tmp->right = build_omp_tree(set, index_split+1, right, 1-ax, depth+1);
 
   return tmp;
   }
