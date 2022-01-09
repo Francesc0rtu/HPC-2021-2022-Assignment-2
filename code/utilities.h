@@ -56,6 +56,6 @@ void swap(data* x, data* y);
 void print_ktree(knode* root);
 void print_array_knode(knode* array, int dim);
 knode* tree_to_array(knode* root, int dim);
-void map_to_array(knode* array, knode* root, int dim, int i);
+void map_to_array(knode* array, knode* root, int dim, int *i);
 void map_to_tree(knode* array, knode* root, int dim, int i);
 void print_ktree_ascii(knode* root, int space);

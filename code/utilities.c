@@ -34,7 +34,7 @@ void print_ktree_ascii(knode *root, int space){
   printf("\n");
   for (int i = COUNT; i < space; i++)
       printf(" ");
-  printf("[(%d,%d),%d]\n", (root->value).x, (root->value).y, root->AxSplit);
+  printf("[(%d,%d),%d,%d]\n", (root->value).x, (root->value).y, root->AxSplit, root->dep);
 
   // Process left child
   print_ktree_ascii(root->left, space);
@@ -138,17 +138,24 @@ knode* tree_to_array(knode* root, int dim){
   knode *array;
   array = malloc(sizeof(knode)*dim);
   int i=0;
-  map_to_array(array,root,dim,0);
+  map_to_array(array,root,dim,&i);
   // print_array_knode(array,dim);
   return array;
 }
 
-void map_to_array(knode* array, knode* root, int dim, int i){
-  if(i<dim){
+void map_to_array(knode* array, knode* root, int dim, int* i){
+  printf("i=%d \n", *i);
+  if(*i < dim){
     if(root!=NULL){
-      array[i] = *root;
-      map_to_array(array, root->left, dim, i+1);
-      map_to_array(array, root->right, dim, i+1);
+      array[*i] = *root;
+      if(root->left != NULL){
+        *i = *i +1;
+        map_to_array(array, root->left, dim, i);
+      }
+      if(root->right != NULL){
+        *i = *i +1;
+        map_to_array(array, root->right, dim, i);
+      }
     }
   }
 }

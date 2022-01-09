@@ -1,7 +1,6 @@
 #include "utilities.h"
 #include <unistd.h>
 knode* build_omp_tree(data* set,int left,int right,int ax, int depth){
-  printf("sono in functions left=%d, right=%d \n", left, right);
   if(left==right){
     knode* tmp;
     tmp = malloc(sizeof(knode));
@@ -27,10 +26,10 @@ knode* build_omp_tree(data* set,int left,int right,int ax, int depth){
   tmp->value = set[index_split];
   tmp->AxSplit = ax;
   tmp->dep = depth;
-  printf("~~~~~depth %d (%d,%d) index=%d \n", depth, (tmp->value).x, (tmp->value).y, index_split);
-// #pragma omp task firstprivate(set,left,right,index_split,ax, depth)
+
+#pragma omp task firstprivate(set,left,right,index_split,ax, depth)
   tmp->left = build_omp_tree(set, left, index_split-1, 1-ax, depth+1);
-// #pragma omp task firstprivate(set,left,right,index_split,ax, depth)
+#pragma omp task firstprivate(set,left,right,index_split,ax, depth)
   tmp->right = build_omp_tree(set, index_split+1, right, 1-ax, depth+1);
 
   return tmp;
