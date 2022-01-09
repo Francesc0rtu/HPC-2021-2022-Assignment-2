@@ -4,9 +4,10 @@
 
 void print(data* set, int dim){
   for (size_t i = 0; i < dim; i++) {
-    printf("(%d,%d) ", set[i].x, set[i].y);
+    printf("(%d,%d), ", set[i].x, set[i].y);
   }printf("\n");
 }
+
 void find_max_min(data* max,data* min, data* set, int dim){
   *max = set[0];
   *min = set[0];
@@ -33,18 +34,15 @@ int split_and_sort(data* set, data max, data min, int left, int right, int ax){
   int k=0, h=right-left;
   float_t target;
   data *aux;
-  printf("split=%d, left=%d, right=%d, center=%d\n", ax, left,right,center);
   aux = malloc(sizeof(data)*(right - left + 1));
   if(ax == X){
     target = (max.x-min.x)/2;
-    printf("target %d\n", target);
     for(int i=left; i<=right; i++){
       if(dist(set[i].x, target) < dist(set[index].x, target)){
         index = i;
       }
     }
     swap(&set[index], &set[right]);
-    printf("set[%d]=(%d,%d) \n", index, set[index].x,set[index].y);
     data pivot = set[right];
     int i=left -1, j;
     for(j = left; j <= right - 1; j++ ){
@@ -59,13 +57,11 @@ int split_and_sort(data* set, data max, data min, int left, int right, int ax){
 
   if(ax == Y){
     target = (max.y-min.y)/2;
-    printf("target %d\n", target);
     for(int i=left; i<=right; i++){
       if(dist(set[i].y, target) < dist(set[index].y, target)){
         index = i;
       }
     }
-    printf("set[%d]=(%d,%d) \n", index, set[index].x,set[index].y);
     swap(&set[index], &set[right]);
     data pivot = set[right];
     int i=left -1, j;
@@ -91,4 +87,20 @@ void swap(data* x, data* y){
 float_t dist(float_t x, float_t y){
   if(y>=x) return (y-x);
   else return x-y;
+}
+
+void print_ktree(knode* root){
+  if(root!=NULL){
+    printf("{(%d,%d),%d} ", (root->value).x, (root->value).y, root->AxSplit );
+    print_ktree(root->left);
+    print_ktree(root->right);
+  }
+}
+
+void Print_ktree_(knode* root){
+  if(root!=NULL){
+    printf("(%d,%d), ", (root->value).x, (root->value).y );
+    Print_ktree_(root->left);
+    Print_ktree_(root->right);
+  }
 }

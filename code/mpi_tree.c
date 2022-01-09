@@ -1,6 +1,9 @@
 #include "utilities.h"
+#include "omp_tree.h"
+#include <unistd.h>
 
 int next_step(int step);
+data* resize(data* set, int dim);
 
 node* build_mpi_tree(data* set, int dim){
   int rank,size;
@@ -17,11 +20,11 @@ node* build_mpi_tree(data* set, int dim){
   MPI_Get_address(&cell.x, &displacements[0]);                                    //i.e. Calculate the size in bytes of
   MPI_Get_address(&cell.y, &displacements[1]);                                    // each block, in this case the size of MPI_FLOAT_T.
   displacements[0] = MPI_Aint_diff(displacements[0], base_address);               //
+  displacements[1] = MPI_Aint_diff(displacements[1], base_address);               //
   MPI_Datatype types[2] = { MPI_FLOAT_T, MPI_FLOAT_T};
 
   MPI_Type_create_struct(2, block_length, displacements, types, &MPI_DATA_TYPE);  // Create the datatype and set the typde available
   MPI_Type_commit(&MPI_DATA_TYPE);
-  displacements[1] = MPI_Aint_diff(displacements[1], base_address);               //
 
   node *tree;
   tree = malloc(sizeof(tree)*dim);
@@ -34,15 +37,9 @@ node* build_mpi_tree(data* set, int dim){
   }
 
   data max, min;
-  int k = 0, split_index;
+  node split_values[num_step];
+  int k = num_step, split_index;
 
-  if(rank == 0){
-    find_max_min(&max, &min, set, dim);
-    printf("max = %d \n", max.x);
-    split_index = split_and_sort(set, max, min, 0, dim-1, split);
-    print(set,dim);
-    printf("index=%d, (%d,%d)\n", split_index, set[split_index].x, set[split_index].y);
-  }
   while(step>=1){
    split = 1 - split;
 
@@ -50,23 +47,73 @@ node* build_mpi_tree(data* set, int dim){
 
    if(rank%(2*step)==0){                                                     // This one are the sending processors
      if(rank + step < size){
-       //invio a rank + step
-       if(rank == 0){
-     }
+       find_max_min(&max, &min, set, dim);                                // Instead of compute each time I can send min.x=set[split_index].x max.x=max.x and
+
+       split_index = split_and_sort(set, max, min, 0, dim-1, split);
+       int new_dim = split_index, send_dim = (dim - new_dim -1);
+
+       k--;
+       split_values[k].value = set[split_index];
+       split_values[k].AxSplit = 1-split;
+
+       MPI_Send(&send_dim, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD);
+       MPI_Send(set+split_index+1, send_dim, MPI_DATA_TYPE, rank+step,0, MPI_COMM_WORLD);      // Send the data
+
+       set = resize(set, new_dim);
+       dim = new_dim;
      }
    }else if(rank%step == 0 && rank!= MASTER){                             // This one are the recv processors
-     //ricevo da rank-step
+     MPI_Recv(&dim, 1, MPI_INT, rank-step, 0, MPI_COMM_WORLD, &status );      // Receive the dimension of the data
+     set = malloc(sizeof(data)*dim);                                            // Allocate the space for the data
+     MPI_Recv(set, dim, MPI_DATA_TYPE, rank-step,0, MPI_COMM_WORLD, &status);    // Receive the data
    }
    step = next_step(step);
  }
 
+  MPI_Barrier(MPI_COMM_WORLD);
+  // for(int i=0; i<size; i++){
+  //   sleep(1);
+  //   if(rank==i){
+  //     printf("sono %d, e ho %d elementi \n", rank, dim);
+  //     print(set,dim);
+  //     for(int j=k; j<num_step; j++){
+  //       printf("[%d, %d].%d  ",(split_values[j].value).x,(split_values[j].value).y,split_values[j].AxSplit);
+  //     }printf("rank=%d \n",rank);
+  //   }
+  // }
+
+  knode *root;
+  if(rank == 3){
+    printf(":----------\n ");
+    print(set, dim);
+    sleep(1);
+  #pragma omp parallel
+    {
+      #pragma omp single
+      root = build_omp_tree(set, 0, dim-1, 1-split);
+    }
+    print_ktree(root);
+    printf("\n");
+    sleep(1);
+    Print_ktree_(root);
+    printf("\n");
+    knode* array_tree;
+    array_tree = tree_to_array(root, dim);
+
 }
 
 
+}
 
-
-
-
+data* resize(data* set, int dim){
+  data* aux;
+  aux = malloc(sizeof(data)*dim);
+  for(int i=0; i<dim; i++){
+    aux[i] = set[i];
+  }
+  free(set);
+  return aux;
+}
 
 int next_step(int step){
   if(step == 2){                                                              // Compute the next step

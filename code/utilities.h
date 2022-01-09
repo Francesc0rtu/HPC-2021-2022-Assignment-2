@@ -32,12 +32,19 @@ float_t y;
 } data;
 
 typedef struct {
-float_t x;
-float_t y;
+data value;
 int AxSplit;
 int left;
 int right;
 } node;
+
+typedef struct L {
+data value;
+int AxSplit;
+struct L *left;
+struct L *right;
+} knode;
+
 
 //////////////////////// HEADER /////////////////////////
 void print(data* set, int dim);
@@ -45,3 +52,5 @@ void find_max_min(data* max,data* min, data* set, int dim);
 int split_and_sort(data* set, data min, data max, int left, int right, int ax);
 float_t dist(float_t x, float_t y);
 void swap(data* x, data* y);
+void print_ktree(knode* root);
+void Print_ktree_(knode* root);

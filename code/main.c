@@ -1,5 +1,5 @@
 #include "utilities.h"
-#include "main.h"
+#include "mpi_tree.h"
 
 data* init_random_set(int dim);
 
@@ -25,10 +25,10 @@ int main(int argc, char* argv[]){
 data* init_random_set(int dim){
   data *aux;
   aux = malloc(sizeof(data)*dim);
-  srand(time(NULL));
+  srand(5);
   for (size_t i = 0; i < dim; i++) {
-    aux[i].x = rand() % 100;
-    aux[i].y = rand() % 100;
+    aux[i].x = rand() % 30;
+    aux[i].y = rand() % 30;
   }
   return aux;
 }
