@@ -10,7 +10,7 @@ node* build_mpi_tree(data* set, int dim){
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-  MPI_Datatype MPI_DATA_TYPE;
+  MPI_Datatype MPI_DATA;
   MPI_Status status;
   int block_length[2]={1,1};
   MPI_Aint displacements[2];
@@ -22,9 +22,8 @@ node* build_mpi_tree(data* set, int dim){
   displacements[0] = MPI_Aint_diff(displacements[0], base_address);               //
   displacements[1] = MPI_Aint_diff(displacements[1], base_address);               //
   MPI_Datatype types[2] = { MPI_FLOAT_T, MPI_FLOAT_T};
-
-  MPI_Type_create_struct(2, block_length, displacements, types, &MPI_DATA_TYPE);  // Create the datatype and set the typde available
-  MPI_Type_commit(&MPI_DATA_TYPE);
+  MPI_Type_create_struct(2, block_length, displacements, types, &MPI_DATA);  // Create the datatype and set the typde available
+  MPI_Type_commit(&MPI_DATA);
 
   node *tree;
   tree = malloc(sizeof(tree)*dim);
@@ -57,7 +56,7 @@ node* build_mpi_tree(data* set, int dim){
        split_values[k].AxSplit = 1-split;
 
        MPI_Send(&send_dim, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD);
-       MPI_Send(set+split_index+1, send_dim, MPI_DATA_TYPE, rank+step,0, MPI_COMM_WORLD);      // Send the data
+       MPI_Send(set+split_index+1, send_dim, MPI_DATA, rank+step,0, MPI_COMM_WORLD);      // Send the data
 
        set = resize(set, new_dim);
        dim = new_dim;
@@ -65,7 +64,7 @@ node* build_mpi_tree(data* set, int dim){
    }else if(rank%step == 0 && rank!= MASTER){                             // This one are the recv processors
      MPI_Recv(&dim, 1, MPI_INT, rank-step, 0, MPI_COMM_WORLD, &status );      // Receive the dimension of the data
      set = malloc(sizeof(data)*dim);                                            // Allocate the space for the data
-     MPI_Recv(set, dim, MPI_DATA_TYPE, rank-step,0, MPI_COMM_WORLD, &status);    // Receive the data
+     MPI_Recv(set, dim, MPI_DATA, rank-step,0, MPI_COMM_WORLD, &status);    // Receive the data
    }
    step = next_step(step);
  }
@@ -83,21 +82,62 @@ node* build_mpi_tree(data* set, int dim){
   // }
 
   knode *root;
-  if(rank == 3){
-    printf(":----------\n ");
-    print(set, dim);
-    sleep(1);
+
+  printf(":----------\n ");
+  print(set, dim);
+  sleep(1);
   #pragma omp parallel
     {
       #pragma omp single
       root = build_omp_tree(set, 0, dim-1, 1-split, 0);
     }
-    print_ktree_ascii(root, 0);
-    printf("------------------------------ \n");
-    knode* array_tree;
-    array_tree = tree_to_array(root, dim);
-    print_array_knode(array_tree,dim);
-  }
+  print_ktree_ascii(root, 0);
+  printf("------------------------------ \n");
+  node* array_tree;
+  array_tree = tree_to_array(root, dim);
+  print_array_node(array_tree,dim);
+  printf("step = %d \n", step);
+
+
+
+  MPI_Datatype MPI_NODE;
+  int block_length_[3]={1,1,1};
+  MPI_Aint displacements_[3];
+  node cell_;
+  MPI_Aint base_address_;
+  MPI_Get_address(&cell_, &base_address_);                                          //Calculate the displacements
+  MPI_Get_address(&cell_.value, &displacements[0]);                                    //i.e. Calculate the size in bytes of
+  MPI_Get_address(&cell_.AxSplit, &displacements[1]);                                    // each block, in this case the size of MPI_FLOAT_T.
+  MPI_Get_address(&cell_.depth, &displacements[2]);
+  displacements[0] = MPI_Aint_diff(displacements[0], base_address_);               //
+  displacements[1] = MPI_Aint_diff(displacements[1], base_address_);               //
+  displacements[2] = MPI_Aint_diff(displacements[2], base_address_);
+  MPI_Datatype types_[3] = { MPI_DATA, MPI_INT, MPI_INT};
+  MPI_Type_create_struct(3, block_length_, displacements_, types_, &MPI_NODE);  // Create the datatype and set the typde available
+  MPI_Type_commit(&MPI_NODE);
+
+
+
+  // int check = FALSE, rcv_dim;
+  // step=1;
+  // while(step<size){
+  //   MPI_Barrier(MPI_COMM_WORLD);
+  //   if(my_rank%(2*step)==0){
+  //     if(my_rank + step < size){    //ricevo da rank+step
+  //       MPI_Recv(&rcv_dim, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD, &status);
+  //
+  //     }
+  //   }else if(check == FALSE){    //mando a rank-step
+  //     MPI_Send(&dim,1,MPI_INT, rank-step, 0, MPI_COMM_WORLD);                 //Send the dimension
+  //     MPI_Send()
+  //     check=TRUE;
+  //   }
+  //   step = step*2;
+  // }
+
+
+
+
 
 
 }

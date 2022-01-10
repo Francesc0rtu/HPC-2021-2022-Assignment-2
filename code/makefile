@@ -1,7 +1,7 @@
 
 
 CC = mpicc
-CFLAGS  = -fopenmp
+CFLAGS  = -fopenmp -std=c99
 
 
 all: kdtree

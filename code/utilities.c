@@ -40,7 +40,7 @@ void print_ktree_ascii(knode *root, int space){
   print_ktree_ascii(root->left, space);
 }
 
-void print_array_knode(knode* array, int dim){
+void print_array_node(node* array, int dim){
   for(int i=0; i<dim; i++){
     printf("(%d,%d), ", (array[i].value).x, (array[i].value).y );
   }
@@ -49,24 +49,102 @@ void print_array_knode(knode* array, int dim){
 //////////////////// TO COMPUTE SPLIT AND REORGANIZE DATA ////////
 
 void find_max_min(data* max,data* min, data* set, int dim){
-  *max = set[0];
-  *min = set[0];
+  float_t max_x = set[0].x , max_y = set[0].y, min_x = set[0].x , min_y = set[0].y;
+  #pragma omp parallel
+  {
+    #pragma omp parallel for reduction(min:min_x, min_y) reduction(max:max_x,max_y)
+    for(size_t i = 0; i < dim; i++){
+      if(set[i].x < min_x){
+        min_x = set[i].x;
+      }
+      if(set[i].x > max_x){
+        max_x = set[i].x;
+      }
+      if(set[i].y < min_y){
+        min_y = set[i].y;
+      }
+      if(set[i].y > max_y){
+        max_y = set[i].y;
+      }
+    }
+    max->x = max_x;
+    max->y = max_y;
+    min->x = min_x;
+    min->y = min_y;
 
-  for(size_t i = 0; i < dim; i++){
-    if(set[i].x < min->x){
-      min->x = set[i].x;
+}
+
+}
+
+void swap(data* x, data* y){
+  data tmp;
+  tmp = *x;
+  *x = *y;
+  *y = tmp;
+}
+
+float_t dist(float_t x, float_t y){
+  if(y>=x) return (y-x);
+  else return x-y;
+}
+
+int find_split_index(data* set, float_t target, int left, int right, int ax){
+  int index = left;
+  int* local_index;
+  int dim;
+  if(ax == X){
+    float_t x = dist(set[index].x, target);
+    #pragma omp parallel shared(dim, local_index)
+    {
+      #pragma omp single
+      {
+        dim=omp_get_num_threads();
+        local_index = malloc(sizeof(int)*dim);
+      }
+      #pragma omp parallel for
+      for(int i=left; i<=right; i++){
+        if(dist(set[i].x, target) < x){
+         index = i;
+         x = dist(set[index].x, target);
+        }
+      }
+      local_index[omp_get_thread_num()] = index;
     }
-    if(set[i].x > max->x){
-      max->x = set[i].x;
-    }
-    if(set[i].y < min->y){
-      min->y = set[i].y;
-    }
-    if(set[i].y > max->y){
-      max->y = set[i].y;
+
+    index = local_index[0];
+    for(int i=0; i<dim; i++){
+      if(dist(set[local_index[i]].x, target) < dist(set[index].x, target)){
+        index = local_index[i];
+      }
     }
   }
+  if(ax == Y){
+    float_t x = dist(set[index].x, target);
+    #pragma omp parallel shared(dim, local_index)
+    {
+      #pragma omp single
+      {
+        dim=omp_get_num_threads();
+        local_index = malloc(sizeof(int)*dim);
+      }
+      #pragma omp parallel for
+      for(int i=left; i<=right; i++){
+        if(dist(set[i].y, target) < x){
+         index = i;
+         x = dist(set[index].y, target);
+        }
+      }
+      local_index[omp_get_thread_num()] = index;
+    }
 
+    index = local_index[0];
+    for(int i=0; i<dim; i++){
+      if(dist(set[local_index[i]].y, target) < dist(set[index].y, target)){
+        index = local_index[i];
+      }
+    }
+  }
+  return index;
 }
 
 int split_and_sort(data* set, data max, data min, int left, int right, int ax){
@@ -77,12 +155,7 @@ int split_and_sort(data* set, data max, data min, int left, int right, int ax){
   aux = malloc(sizeof(data)*(right - left + 1));
   if(ax == X){
     target = (max.x-min.x)/2 + min.x;
-    // printf("target %d \n", target);
-    for(int i=left; i<=right; i++){
-      if(dist(set[i].x, target) < dist(set[index].x, target)){
-        index = i;
-      }
-    }
+    index = find_split_index(set, target, left, right, ax);
     swap(&set[index], &set[right]);
     data pivot = set[right];
     int i=left -1, j;
@@ -98,12 +171,8 @@ int split_and_sort(data* set, data max, data min, int left, int right, int ax){
 
   if(ax == Y){
     target = (max.y-min.y)/2 + min.y;
-    // printf("target %d \n", target);
-    for(int i=left; i<=right; i++){
-      if(dist(set[i].y, target) < dist(set[index].y, target)){
-        index = i;
-      }
-    }
+    index = find_split_index(set, target, left, right, ax);
+
     swap(&set[index], &set[right]);
     data pivot = set[right];
     int i=left -1, j;
@@ -119,45 +188,38 @@ int split_and_sort(data* set, data max, data min, int left, int right, int ax){
   }
 }
 
-void swap(data* x, data* y){
-  data tmp;
-  tmp = *x;
-  *x = *y;
-  *y = tmp;
-}
-
-float_t dist(float_t x, float_t y){
-  if(y>=x) return (y-x);
-  else return x-y;
-}
-
-
 /////////////////// TREE TO ARRAY AND VICEVERSA /////////////////////
 
-knode* tree_to_array(knode* root, int dim){
-  knode *array;
-  array = malloc(sizeof(knode)*dim);
+node* tree_to_array(knode* root, int dim){////////////// SERIAL /////////////7
+  node *array;
+  array = malloc(sizeof(node)*dim);
   int i=0;
-  map_to_array(array,root,dim,&i);
+  i=map_to_array(array,root,dim,i);
   // print_array_knode(array,dim);
   return array;
 }
 
-void map_to_array(knode* array, knode* root, int dim, int* i){
-  printf("i=%d \n", *i);
-  if(*i < dim){
+int map_to_array(node* array, knode* root, int dim, int i){
+
+  if(i < dim){
     if(root!=NULL){
-      array[*i] = *root;
+      array[i].value = root->value;
+      array[i].AxSplit = root->AxSplit;
+      array[i].depth = root->dep;
+      i++;
       if(root->left != NULL){
-        *i = *i +1;
-        map_to_array(array, root->left, dim, i);
+
+     // #pragma omp task firstprivate(array, root, dim)
+      i = map_to_array(array, root->left, dim, i);
       }
       if(root->right != NULL){
-        *i = *i +1;
-        map_to_array(array, root->right, dim, i);
+     // #pragma omp task firstprivate(array, root, dim)
+      i =  map_to_array(array, root->right, dim, i);
       }
+
     }
   }
+  return i;
 }
 
 knode* array_to_tree(knode* array, int dim){

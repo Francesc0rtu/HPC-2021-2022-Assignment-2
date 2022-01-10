@@ -25,10 +25,10 @@ int main(int argc, char* argv[]){
 data* init_random_set(int dim){
   data *aux;
   aux = malloc(sizeof(data)*dim);
-  srand(2);
+  srand(time(NULL));
   for (size_t i = 0; i < dim; i++) {
-    aux[i].x = rand() % 30;
-    aux[i].y = rand() % 30;
+    aux[i].x = rand() / 1000000;
+    aux[i].y = rand() / 1000000;
   }
   return aux;
 }
