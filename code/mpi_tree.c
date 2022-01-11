@@ -4,6 +4,7 @@
 
 int next_step(int step);
 data* resize(data* set, int dim);
+node* expand(node* array_tree, node* rcv_array, node* merge_array, int dim,int rcv_dim);
 
 node* build_mpi_tree(data* set, int dim){
   int rank,size;
@@ -37,7 +38,7 @@ node* build_mpi_tree(data* set, int dim){
 
   data max, min;
   node split_values[num_step];
-  int k = num_step, split_index;
+  int k = num_step, split_index, depth = 0;
 
   while(step>=1){
    split = 1 - split;
@@ -54,6 +55,7 @@ node* build_mpi_tree(data* set, int dim){
        k--;
        split_values[k].value = set[split_index];
        split_values[k].AxSplit = 1-split;
+       split_values[k].depth = depth ;
 
        MPI_Send(&send_dim, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD);
        MPI_Send(set+split_index+1, send_dim, MPI_DATA, rank+step,0, MPI_COMM_WORLD);      // Send the data
@@ -67,37 +69,32 @@ node* build_mpi_tree(data* set, int dim){
      MPI_Recv(set, dim, MPI_DATA, rank-step,0, MPI_COMM_WORLD, &status);    // Receive the data
    }
    step = next_step(step);
+   depth++;
  }
 
-  MPI_Barrier(MPI_COMM_WORLD);
-  // for(int i=0; i<size; i++){
-  //   sleep(1);
-  //   if(rank==i){
-  //     printf("sono %d, e ho %d elementi \n", rank, dim);
-  //     print(set,dim);
-  //     for(int j=k; j<num_step; j++){
-  //       printf("[%d, %d].%d  ",(split_values[j].value).x,(split_values[j].value).y,split_values[j].AxSplit);
-  //     }printf("rank=%d \n",rank);
-  //   }
-  // }
-
+  printf("depth = %d \n", depth);
   knode *root;
 
   printf(":----------\n ");
   print(set, dim);
   sleep(1);
-  #pragma omp parallel
-    {
-      #pragma omp single
-      root = build_omp_tree(set, 0, dim-1, 1-split, 0);
-    }
-  print_ktree_ascii(root, 0);
-  printf("------------------------------ \n");
+  // #pragma omp parallel
+  //   {
+  //     #pragma omp single
+      root = build_omp_tree(set, 0, dim-1, 1-split, depth);
+    // }
   node* array_tree;
   array_tree = tree_to_array(root, dim);
-  print_array_node(array_tree,dim);
-  printf("step = %d \n", step);
+  for(int i=0; i<size; i++){
+    sleep(1);
+    if(rank==i){
+      printf("///////////////  %d ////////////// \n",rank);
+      print_ktree_ascii(root, 0);
+      print_array_node(array_tree,dim);
+    }
+  }
 
+  sleep(1);
 
 
   MPI_Datatype MPI_NODE;
@@ -106,40 +103,72 @@ node* build_mpi_tree(data* set, int dim){
   node cell_;
   MPI_Aint base_address_;
   MPI_Get_address(&cell_, &base_address_);                                          //Calculate the displacements
-  MPI_Get_address(&cell_.value, &displacements[0]);                                    //i.e. Calculate the size in bytes of
-  MPI_Get_address(&cell_.AxSplit, &displacements[1]);                                    // each block, in this case the size of MPI_FLOAT_T.
-  MPI_Get_address(&cell_.depth, &displacements[2]);
-  displacements[0] = MPI_Aint_diff(displacements[0], base_address_);               //
-  displacements[1] = MPI_Aint_diff(displacements[1], base_address_);               //
-  displacements[2] = MPI_Aint_diff(displacements[2], base_address_);
+  MPI_Get_address(&cell_.value, &displacements_[0]);                                    //i.e. Calculate the size in bytes of
+  MPI_Get_address(&cell_.AxSplit, &displacements_[1]);                                    // each block, in this case the size of MPI_FLOAT_T.
+  MPI_Get_address(&cell_.depth, &displacements_[2]);
+  displacements_[0] = MPI_Aint_diff(displacements_[0], base_address_);               //
+  displacements_[1] = MPI_Aint_diff(displacements_[1], base_address_);               //
+  displacements_[2] = MPI_Aint_diff(displacements_[2], base_address_);
   MPI_Datatype types_[3] = { MPI_DATA, MPI_INT, MPI_INT};
   MPI_Type_create_struct(3, block_length_, displacements_, types_, &MPI_NODE);  // Create the datatype and set the typde available
   MPI_Type_commit(&MPI_NODE);
 
 
 
-  // int check = FALSE, rcv_dim;
-  // step=1;
-  // while(step<size){
-  //   MPI_Barrier(MPI_COMM_WORLD);
-  //   if(my_rank%(2*step)==0){
-  //     if(my_rank + step < size){    //ricevo da rank+step
-  //       MPI_Recv(&rcv_dim, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD, &status);
-  //
-  //     }
-  //   }else if(check == FALSE){    //mando a rank-step
-  //     MPI_Send(&dim,1,MPI_INT, rank-step, 0, MPI_COMM_WORLD);                 //Send the dimension
-  //     MPI_Send()
-  //     check=TRUE;
-  //   }
-  //   step = step*2;
-  // }
+
+  int check = FALSE, rcv_dim;
+  step=1;
+  while(step<size){
+    MPI_Barrier(MPI_COMM_WORLD);
+    if(rank%(2*step)==0){
+      if(rank + step < size){    //ricevo da rank+step
+        node *rcv_array, *merge_array;
+        MPI_Recv(&rcv_dim, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD, &status);
+        // printf("sono %d e ricevo %d elmenti da %d \n", rank,rcv_dim,rank+step);
+        printf("il mio split value e (%d,%d) depth=%d \n", (split_values[k].value).x, (split_values[k].value).y, split_values[k].depth );
+        sleep(1);
+        rcv_array = malloc(sizeof(node)*rcv_dim);
+        merge_array = malloc(sizeof(node)*(rcv_dim+dim+1));
+        MPI_Recv(rcv_array,rcv_dim,MPI_NODE,rank+step,0,MPI_COMM_WORLD,&status);
+        merge_array[0] = split_values[k];
+        k++;
+        array_tree = expand(array_tree, rcv_array, merge_array, dim, rcv_dim);
+        sleep(1);
+        dim = rcv_dim+dim+1;
+        print_array_node(array_tree,dim);
+      }
+    }else if(check == FALSE){    //mando a rank-step
+      // printf("sono %d e mando %d elmenti a %d \n", rank,dim,rank-step);
+      sleep(1);
+      MPI_Send(&dim,1,MPI_INT, rank-step, 0, MPI_COMM_WORLD);                 //Send the dimension
+      MPI_Send(array_tree, dim, MPI_NODE, rank-step, 0, MPI_COMM_WORLD);
+      free(array_tree);
+      ////////// c`e' da liberare l'albero
+      // free_tree(root);
+      check=TRUE;
+    }
+    step = step*2;
+  }
+
+  if(rank == 0){
+    printf("dim %d \n", dim);
+    print_array_node(array_tree,dim);
+  }
 
 
 
+}
 
-
-
+node* expand(node* array_tree, node* rcv_array, node* merge_array, int dim,int rcv_dim){
+  for(int i=0; i<dim; i++){
+    merge_array[i+1] = array_tree[i];
+  }
+  for(int i=0; i<rcv_dim; i++){
+    merge_array[i+dim+1] = rcv_array[i];
+  }
+  free(array_tree);
+  free(rcv_array);
+  return merge_array;
 }
 
 data* resize(data* set, int dim){

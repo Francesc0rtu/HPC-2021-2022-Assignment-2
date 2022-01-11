@@ -41,9 +41,12 @@ void print_ktree_ascii(knode *root, int space){
 }
 
 void print_array_node(node* array, int dim){
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  printf("------------%d-----------\n",rank);
   for(int i=0; i<dim; i++){
     printf("(%d,%d), ", (array[i].value).x, (array[i].value).y );
-  }
+  }printf("\n");
 }
 
 //////////////////// TO COMPUTE SPLIT AND REORGANIZE DATA ////////
