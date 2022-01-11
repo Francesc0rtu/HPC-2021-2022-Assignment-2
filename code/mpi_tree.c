@@ -54,7 +54,7 @@ node* build_mpi_tree(data* set, int dim){
 
        k--;
        split_values[k].value = set[split_index];
-       split_values[k].AxSplit = 1-split;
+       split_values[k].AxSplit = split;
        split_values[k].depth = depth ;
 
        MPI_Send(&send_dim, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD);
@@ -98,19 +98,21 @@ node* build_mpi_tree(data* set, int dim){
 
 
   MPI_Datatype MPI_NODE;
-  int block_length_[3]={1,1,1};
-  MPI_Aint displacements_[3];
+  int block_length_[5]={1,1,1,1,1};
+  MPI_Aint displacements_[5];
   node cell_;
   MPI_Aint base_address_;
   MPI_Get_address(&cell_, &base_address_);                                          //Calculate the displacements
   MPI_Get_address(&cell_.value, &displacements_[0]);                                    //i.e. Calculate the size in bytes of
   MPI_Get_address(&cell_.AxSplit, &displacements_[1]);                                    // each block, in this case the size of MPI_FLOAT_T.
   MPI_Get_address(&cell_.depth, &displacements_[2]);
-  displacements_[0] = MPI_Aint_diff(displacements_[0], base_address_);               //
-  displacements_[1] = MPI_Aint_diff(displacements_[1], base_address_);               //
-  displacements_[2] = MPI_Aint_diff(displacements_[2], base_address_);
-  MPI_Datatype types_[3] = { MPI_DATA, MPI_INT, MPI_INT};
-  MPI_Type_create_struct(3, block_length_, displacements_, types_, &MPI_NODE);  // Create the datatype and set the typde available
+  MPI_Get_address(&cell_.left, &displacements_[3]);                                    // each block, in this case the size of MPI_FLOAT_T.
+  MPI_Get_address(&cell_.right, &displacements_[4]);
+  for(int i=0; i<5; i++){
+    displacements_[i] = MPI_Aint_diff(displacements_[i], base_address_);               //
+  }
+  MPI_Datatype types_[5] = { MPI_DATA, MPI_INT, MPI_INT,MPI_INT,MPI_INT};
+  MPI_Type_create_struct(5, block_length_, displacements_, types_, &MPI_NODE);  // Create the datatype and set the typde available
   MPI_Type_commit(&MPI_NODE);
 
 
@@ -131,11 +133,13 @@ node* build_mpi_tree(data* set, int dim){
         merge_array = malloc(sizeof(node)*(rcv_dim+dim+1));
         MPI_Recv(rcv_array,rcv_dim,MPI_NODE,rank+step,0,MPI_COMM_WORLD,&status);
         merge_array[0] = split_values[k];
+        merge_array[0].left = 1;
+        merge_array[0].right = dim;
         k++;
         array_tree = expand(array_tree, rcv_array, merge_array, dim, rcv_dim);
         sleep(1);
         dim = rcv_dim+dim+1;
-        print_array_node(array_tree,dim);
+        // print_array_node(array_tree,dim);
       }
     }else if(check == FALSE){    //mando a rank-step
       // printf("sono %d e mando %d elmenti a %d \n", rank,dim,rank-step);
@@ -162,9 +166,21 @@ node* build_mpi_tree(data* set, int dim){
 node* expand(node* array_tree, node* rcv_array, node* merge_array, int dim,int rcv_dim){
   for(int i=0; i<dim; i++){
     merge_array[i+1] = array_tree[i];
+    if(merge_array[i+1].left != -1){
+      merge_array[i+1].left = merge_array[i+1].left + 1;
+    }
+    if(merge_array[i+1].right != -1){
+      merge_array[i+1].right = merge_array[i+1].right + 1;
+    }
   }
   for(int i=0; i<rcv_dim; i++){
     merge_array[i+dim+1] = rcv_array[i];
+    if(merge_array[i+dim+1].left != -1){
+      merge_array[i+dim+1].left = merge_array[i+dim+1].left + dim + 1;
+    }
+    if(merge_array[i+dim+1].right != -1){
+      merge_array[i+dim+1].right = merge_array[i+dim+1].right + dim + 1;
+    }
   }
   free(array_tree);
   free(rcv_array);

@@ -35,6 +35,8 @@ typedef struct {
 data value;
 int AxSplit;
 int depth;
+int left;
+int right;
 } node;
 
 typedef struct L {

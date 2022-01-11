@@ -45,7 +45,7 @@ void print_array_node(node* array, int dim){
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   printf("------------%d-----------\n",rank);
   for(int i=0; i<dim; i++){
-    printf("(%d,%d), ", (array[i].value).x, (array[i].value).y );
+    printf("[%d]_{(%d,%d),lh=%d,rh=%d,ax=%d} ", i,(array[i].value).x, (array[i].value).y, array[i].left,array[i].right,array[i].AxSplit );
   }printf("\n");
 }
 
@@ -203,22 +203,27 @@ node* tree_to_array(knode* root, int dim){////////////// SERIAL /////////////7
 }
 
 int map_to_array(node* array, knode* root, int dim, int i){
-
+  int j;
   if(i < dim){
     if(root!=NULL){
       array[i].value = root->value;
       array[i].AxSplit = root->AxSplit;
       array[i].depth = root->dep;
+      array[i].left = -1;
+      array[i].right = -1;
+      j=i;
       i++;
-      if(root->left != NULL){
 
+      if(root->left != NULL){
      // #pragma omp task firstprivate(array, root, dim)
+      array[j].left = i;
       i = map_to_array(array, root->left, dim, i);
-      }
+    }
       if(root->right != NULL){
      // #pragma omp task firstprivate(array, root, dim)
+      array[j].right = i;
       i =  map_to_array(array, root->right, dim, i);
-      }
+    }
 
     }
   }
