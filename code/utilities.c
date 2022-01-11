@@ -12,7 +12,7 @@ void print(data* set, int dim){
 
 void print_ktree(knode* root){
   if(root!=NULL){
-    printf("{(%d,%d),%d, %d} ", (root->value).x, (root->value).y, root->AxSplit, root->dep );
+    printf("{(%d,%d),%d, %d} ", (root->value).x, (root->value).y, root->AxSplit, root->depth );
     print_ktree(root->left);
     print_ktree(root->right);
   }
@@ -34,7 +34,7 @@ void print_ktree_ascii(knode *root, int space){
   printf("\n");
   for (int i = COUNT; i < space; i++)
       printf(" ");
-  printf("[(%d,%d),%d,%d]\n", (root->value).x, (root->value).y, root->AxSplit, root->dep);
+  printf("[(%d,%d),%d,%d]\n", (root->value).x, (root->value).y, root->AxSplit, root->depth);
 
   // Process left child
   print_ktree_ascii(root->left, space);
@@ -198,7 +198,6 @@ node* tree_to_array(knode* root, int dim){////////////// SERIAL /////////////7
   array = malloc(sizeof(node)*dim);
   int i=0;
   i=map_to_array(array,root,dim,i);
-  // print_array_knode(array,dim);
   return array;
 }
 
@@ -208,23 +207,20 @@ int map_to_array(node* array, knode* root, int dim, int i){
     if(root!=NULL){
       array[i].value = root->value;
       array[i].AxSplit = root->AxSplit;
-      array[i].depth = root->dep;
+      array[i].depth = root->depth;
       array[i].left = -1;
       array[i].right = -1;
       j=i;
       i++;
 
       if(root->left != NULL){
-     // #pragma omp task firstprivate(array, root, dim)
       array[j].left = i;
       i = map_to_array(array, root->left, dim, i);
-    }
+      }
       if(root->right != NULL){
-     // #pragma omp task firstprivate(array, root, dim)
       array[j].right = i;
       i =  map_to_array(array, root->right, dim, i);
-    }
-
+      }
     }
   }
   return i;
@@ -239,7 +235,3 @@ knode* array_to_tree(knode* array, int dim){
 void map_to_tree(knode* array, knode* root, int dim, int i){
 
 }
-
-// void merge_array_tree(knode* merge, knode* subleft, knode *subright, int dimlh, int dimrh){
-//
-// }

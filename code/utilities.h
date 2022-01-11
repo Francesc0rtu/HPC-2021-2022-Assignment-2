@@ -42,7 +42,7 @@ int right;
 typedef struct L {
 data value;
 int AxSplit;
-int dep;
+int depth;
 struct L *left;
 struct L *right;
 } knode;
