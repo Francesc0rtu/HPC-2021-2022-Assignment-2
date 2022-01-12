@@ -78,21 +78,27 @@ node* build_mpi_tree(data* set, int dim){
   printf(":----------\n ");
   print(set, dim);
   sleep(1);
-  node* array_tree;
+
+  node* array_tree, array;
   #pragma omp parallel
   {
     #pragma omp single
+    {
       array_tree=build_omp_array_tree(set, 0,dim-1,1-split,depth);
+      root = build_omp_tree(set,0,dim-1,1-split,depth);
+
+    }
   }
 
-  // array_tree = tree_to_array(root, dim);
+  // array = tree_to_array(root, dim);
 
   for(int i=0; i<size; i++){
     sleep(1);
     if(rank==i){
       printf("///////////////  %d ////////////// \n",rank);
-      // print_ktree_ascii(root, 0);
+      print_ktree_ascii(root, 0);
       print_array_node(array_tree,dim);
+
     }
   }
 
@@ -135,7 +141,7 @@ node* build_mpi_tree(data* set, int dim){
         MPI_Recv(rcv_array,rcv_dim,MPI_NODE,rank+step,0,MPI_COMM_WORLD,&status);
         merge_array[0] = split_values[k];
         merge_array[0].left = 1;
-        merge_array[0].right = dim;
+        merge_array[0].right = dim + 1;
         k++;
         array_tree = expand(array_tree, rcv_array, merge_array, dim, rcv_dim);
         sleep(1);

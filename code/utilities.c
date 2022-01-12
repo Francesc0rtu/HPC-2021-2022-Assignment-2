@@ -226,16 +226,6 @@ int map_to_array(node* array, knode* root, int dim, int i){
   return i;
 }
 
-knode* array_to_tree(knode* array, int dim){
-  knode* root;
-  int i;
-  map_to_tree(array, root, dim, i);
-}
-
-void map_to_tree(knode* array, knode* root, int dim, int i){
-
-}
-
 node* expand(node* array_tree, node* rcv_array, node* merge_array, int dim,int rcv_dim){
   #pragma omp parallel
   {

@@ -53,13 +53,15 @@ node* build_omp_array_tree(data* set, int left,int right,int ax, int depth){
     int index_split, dim = right - left + 1,left_dim,right_dim;
     find_max_min(&max,&min, set+left, dim);
     index_split = split_and_sort(set, max,min,left,right,ax);
+
     merged = malloc(sizeof(node)*dim);
-    merged[0].value = set[left];
+    merged[0].value = set[index_split];
     merged[0].AxSplit = ax;
     merged[0].depth = depth;
+    printf("value=(%d,%d) left=%d, index_split=%d \n",(merged[0].value).x,(merged[0].value).y,left_dim,index_split);
     if(left <= index_split -1){
-      #pragma omp task firstprivate(set,left,right,index_split,ax,depth) shared(left_array)
-      left_array = build_omp_array_tree(set,left, index_split -1, ax,depth);
+      // #pragma omp task firstprivate(set,left,right,index_split,ax,depth) shared(left_array)
+      left_array = build_omp_array_tree(set,left, index_split -1, 1-ax, depth+1);
       left_dim=index_split - left;
       merged[0].left = 1;
     }else{
@@ -67,8 +69,8 @@ node* build_omp_array_tree(data* set, int left,int right,int ax, int depth){
       merged[0].left = -1;
     }
     if(index_split + 1 <= right){
-      #pragma omp task firstprivate(set, index_split,right,ax,depth) shared(right_array)
-      right_array = build_omp_array_tree(set,index_split + 1, right, ax,depth);
+      // #pragma omp task firstprivate(set, index_split,right,ax,depth) shared(right_array)
+      right_array = build_omp_array_tree(set,index_split + 1, right, 1-ax, depth+1);
       right_dim = right - index_split ;
       if(left_dim == 0){
         merged[0].right = 1;
@@ -79,7 +81,7 @@ node* build_omp_array_tree(data* set, int left,int right,int ax, int depth){
       right_dim=0;
       merged[0].right = -1;
     }
-    #pragma omp taskwait
+    // #pragma omp taskwait
     merged = expand(left_array, right_array, merged,left_dim, right_dim);
     return merged;
   }
