@@ -36,31 +36,50 @@ knode* build_omp_tree(data* set,int left,int right,int ax, int depth){
   }
 }
 
-void build_omp_array_tree(data* set,node* tree, int left,int right,int ax, int depth, int* i){
+int build_omp_array_tree(data* set,node* tree, int left,int right,int ax, int depth, int i){
   if(left==right){
-    *i++;
-    tree[*i].value = set[left];
-    tree[*i].AxSplit = ax;
-    tree[*i].depth = depth;
-    tree[*i].left = -1;
-    tree[*i].right = -1;
+    i++;
+    tree[i].value = set[left];
+    tree[i].AxSplit = ax;
+    tree[i].depth = depth;
+    tree[i].left = -1;
+    tree[i].right = -1;
+    return i;
   }
   if(left > right){
+    return -1;
   }
   if(left < right){
   data max, min;
-  int index_split;
+  int index_split,j,h;
   find_max_min(&max, &min, set+left , right-left +1);
   index_split = split_and_sort(set, max ,min, left, right, ax);
-  *i++;
-  tree[*i].value = set[index_split];
-  tree[*i].AxSplit = ax;
-  tree[*i].depth = depth;
-  printf("i+++ = %d \n",*i);
-// #pragma omp task firstprivate(set,left,right,index_split,ax, depth)
-  build_omp_array_tree(set, tree, left, index_split-1, 1-ax, depth+1,i);
-// #pragma omp task firstprivate(set,left,right,index_split,ax, depth)
-   build_omp_array_tree(set, tree, index_split+1, right, 1-ax, depth+1,i);
+  i++;
+  tree[i].value = set[index_split];
+  tree[i].AxSplit = ax;
+  tree[i].depth = depth;
+  printf("i+++ = %d \n",i);
+  j=i;
+  #pragma omp task firstprivate(set,tree left,right,index_split,ax, depth,i,j)
+  tree[j].left = build_omp_array_tree(set, tree, left, index_split-1, 1-ax, depth+1,i);
+  h=tree[j].left;
+  if(h!=-1){
+  #pragma omp task firstprivate(set,tree,left,right,index_split,ax, depth,i,j)
+   tree[j].right = build_omp_array_tree(set, tree, index_split+1, right, 1-ax, depth+1,h);
+   if(tree[j].right == -1){
+     return h;
+   }else{
+     return tree[j].right;
+   }
+ }else if(h==-1){
+   #pragma omp task firstprivate(set,tree,left,right,index_split,ax, depth,i,j)
+   tree[j].right = build_omp_array_tree(set, tree, index_split+1, right, 1-ax, depth+1,i);
+   if(tree[j].right == -1){
+     return i;
+   }else{
+     return tree[j].right;
+   }
+  }
 
   }
 }

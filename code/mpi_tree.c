@@ -83,9 +83,9 @@ node* build_mpi_tree(data* set, int dim){
   int i=-1;
   #pragma omp parallel
     {printf("lalalalallala %d \n", i);
-      #pragma omp single
       // root = build_omp_tree(set, 0, dim-1, 1-split, depth);
-      i=build_omp_array_tree(set,array_tree, 0,dim-1,1-split,depth,&i);
+      #pragma omp single
+      i=build_omp_array_tree(set,array_tree, 0,dim-1,1-split,depth,i);
     }
   // array_tree = tree_to_array(root, dim);
 
@@ -93,7 +93,7 @@ node* build_mpi_tree(data* set, int dim){
     sleep(1);
     if(rank==i){
       printf("///////////////  %d ////////////// \n",rank);
-      print_ktree_ascii(root, 0);
+      // print_ktree_ascii(root, 0);
       print_array_node(array_tree,dim);
     }
   }
