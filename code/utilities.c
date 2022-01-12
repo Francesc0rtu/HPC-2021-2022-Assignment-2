@@ -235,3 +235,36 @@ knode* array_to_tree(knode* array, int dim){
 void map_to_tree(knode* array, knode* root, int dim, int i){
 
 }
+
+node* expand(node* array_tree, node* rcv_array, node* merge_array, int dim,int rcv_dim){
+  #pragma omp parallel
+  {
+    #pragma omp parallel for
+    for(int i=0; i<dim; i++){
+      merge_array[i+1] = array_tree[i];
+      if(merge_array[i+1].left != -1){
+        merge_array[i+1].left = merge_array[i+1].left + 1;
+      }
+      if(merge_array[i+1].right != -1){
+        merge_array[i+1].right = merge_array[i+1].right + 1;
+      }
+    }
+    #pragma omp parallel for
+    for(int i=0; i<rcv_dim; i++){
+      merge_array[i+dim+1] = rcv_array[i];
+      if(merge_array[i+dim+1].left != -1){
+        merge_array[i+dim+1].left = merge_array[i+dim+1].left + dim + 1;
+      }
+      if(merge_array[i+dim+1].right != -1){
+        merge_array[i+dim+1].right = merge_array[i+dim+1].right + dim + 1;
+      }
+    }
+  }
+  if(dim > 0){
+    free(array_tree);
+  }
+  if(rcv_dim > 0){
+    free(rcv_array);
+  }
+  return merge_array;
+}

@@ -79,14 +79,12 @@ node* build_mpi_tree(data* set, int dim){
   print(set, dim);
   sleep(1);
   node* array_tree;
-  array_tree = malloc(sizeof(node)*dim);
-  int i=-1;
   #pragma omp parallel
-    {printf("lalalalallala %d \n", i);
-      // root = build_omp_tree(set, 0, dim-1, 1-split, depth);
-      #pragma omp single
-      i=build_omp_array_tree(set,array_tree, 0,dim-1,1-split,depth,i);
-    }
+  {
+    #pragma omp single
+      array_tree=build_omp_array_tree(set, 0,dim-1,1-split,depth);
+  }
+
   // array_tree = tree_to_array(root, dim);
 
   for(int i=0; i<size; i++){
@@ -166,34 +164,7 @@ node* build_mpi_tree(data* set, int dim){
 
 }
 
-node* expand(node* array_tree, node* rcv_array, node* merge_array, int dim,int rcv_dim){
-  #pragma omp parallel
-  {
-    #pragma omp parallel for
-    for(int i=0; i<dim; i++){
-      merge_array[i+1] = array_tree[i];
-      if(merge_array[i+1].left != -1){
-        merge_array[i+1].left = merge_array[i+1].left + 1;
-      }
-      if(merge_array[i+1].right != -1){
-        merge_array[i+1].right = merge_array[i+1].right + 1;
-      }
-    }
-    #pragma omp parallel for
-    for(int i=0; i<rcv_dim; i++){
-      merge_array[i+dim+1] = rcv_array[i];
-      if(merge_array[i+dim+1].left != -1){
-        merge_array[i+dim+1].left = merge_array[i+dim+1].left + dim + 1;
-      }
-      if(merge_array[i+dim+1].right != -1){
-        merge_array[i+dim+1].right = merge_array[i+dim+1].right + dim + 1;
-      }
-    }
-  }
-  free(array_tree);
-  free(rcv_array);
-  return merge_array;
-}
+
 
 data* resize(data* set, int dim){
   data* aux;

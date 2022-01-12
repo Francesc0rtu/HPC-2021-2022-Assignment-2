@@ -58,3 +58,4 @@ node* tree_to_array(knode* root, int dim);
 int map_to_array(node* array, knode* root, int dim, int i);
 void map_to_tree(knode* array, knode* root, int dim, int i);
 void print_ktree_ascii(knode* root, int space);
+node* expand(node* array_tree, node* rcv_array, node* merge_array, int dim,int rcv_dim);
