@@ -5,25 +5,14 @@
 
 
 
+
 node* build_mpi_tree(data* set, int dim){
   int rank,size;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-  MPI_Datatype MPI_DATA;
   MPI_Status status;
-  int block_length[2]={1,1};
-  MPI_Aint displacements[2];
-  data cell;
-  MPI_Aint base_address;
-  MPI_Get_address(&cell, &base_address);                                          //Calculate the displacements
-  MPI_Get_address(&cell.x, &displacements[0]);                                    //i.e. Calculate the size in bytes of
-  MPI_Get_address(&cell.y, &displacements[1]);                                    // each block, in this case the size of MPI_FLOAT_T.
-  displacements[0] = MPI_Aint_diff(displacements[0], base_address);               //
-  displacements[1] = MPI_Aint_diff(displacements[1], base_address);               //
-  MPI_Datatype types[2] = { MPI_FLOAT_T, MPI_FLOAT_T};
-  MPI_Type_create_struct(2, block_length, displacements, types, &MPI_DATA);  // Create the datatype and set the typde available
-  MPI_Type_commit(&MPI_DATA);
+  MPI_Datatype MPI_DATA = create_MPI_type_DATA();
+  MPI_Datatype MPI_NODE = create_MPI_type_NODE();
 
 
   int num_step = 1, step = 1, split = Y;
@@ -77,40 +66,14 @@ node* build_mpi_tree(data* set, int dim){
     tree=build_omp_tree(set, 0,dim-1,1-split,depth);
   }
 
-  // array = tree_to_array(root, dim);
-
   for(int i=0; i<size; i++){
     sleep(1);
     if(rank==i){
       printf("///////////////  %d ////////////// \n",rank);
       print_tree_ascii(tree, 0, 0);
-      print_array_node(tree,dim);
-
+      // print_array_node(tree,dim);
     }
   }
-
-
-
-  MPI_Datatype MPI_NODE;
-  int block_length_[5]={1,1,1,1,1};
-  MPI_Aint displacements_[5];
-  node cell_;
-  MPI_Aint base_address_;
-  MPI_Get_address(&cell_, &base_address_);                                          //Calculate the displacements
-  MPI_Get_address(&cell_.value, &displacements_[0]);                                    //i.e. Calculate the size in bytes of
-  MPI_Get_address(&cell_.AxSplit, &displacements_[1]);                                    // each block, in this case the size of MPI_FLOAT_T.
-  MPI_Get_address(&cell_.depth, &displacements_[2]);
-  MPI_Get_address(&cell_.left, &displacements_[3]);                                    // each block, in this case the size of MPI_FLOAT_T.
-  MPI_Get_address(&cell_.right, &displacements_[4]);
-  for(int i=0; i<5; i++){
-    displacements_[i] = MPI_Aint_diff(displacements_[i], base_address_);               //
-  }
-  MPI_Datatype types_[5] = { MPI_DATA, MPI_INT, MPI_INT,MPI_INT,MPI_INT};
-  MPI_Type_create_struct(5, block_length_, displacements_, types_, &MPI_NODE);  // Create the datatype and set the typde available
-  MPI_Type_commit(&MPI_NODE);
-
-
-
 
   int check = FALSE, rcv_dim;
   step=1;
@@ -144,11 +107,10 @@ node* build_mpi_tree(data* set, int dim){
 
   if(rank == 0){
     printf("dim %d \n", dim);
-    print_tree_ascii(tree,0,0);
+    // print_tree_ascii(tree,0,0);
   }
 
-
-
+  return tree;
 }
 
 
@@ -176,4 +138,42 @@ int next_step(int step){
     return - 1;
   }
   return  step = step/2;
+}
+
+MPI_Datatype create_MPI_type_DATA(){
+  MPI_Datatype MPI_DATA;
+  int block_length[2]={1,1};
+  MPI_Aint displacements[2];
+  data cell;
+  MPI_Aint base_address;
+  MPI_Get_address(&cell, &base_address);                                          //Calculate the displacements
+  MPI_Get_address(&cell.x, &displacements[0]);                                    //i.e. Calculate the size in bytes of
+  MPI_Get_address(&cell.y, &displacements[1]);                                    // each block, in this case the size of MPI_FLOAT_T.
+  displacements[0] = MPI_Aint_diff(displacements[0], base_address);               //
+  displacements[1] = MPI_Aint_diff(displacements[1], base_address);               //
+  MPI_Datatype types[2] = { MPI_FLOAT_T, MPI_FLOAT_T};
+  MPI_Type_create_struct(2, block_length, displacements, types, &MPI_DATA);  // Create the datatype and set the typde available
+  MPI_Type_commit(&MPI_DATA);
+  return MPI_DATA;
+}
+
+MPI_Datatype create_MPI_type_NODE(){
+  MPI_Datatype MPI_NODE, MPI_DATA = create_MPI_type_DATA();
+  int block_length_[5]={1,1,1,1,1};
+  MPI_Aint displacements_[5];
+  node cell_;
+  MPI_Aint base_address_;
+  MPI_Get_address(&cell_, &base_address_);                                          //Calculate the displacements
+  MPI_Get_address(&cell_.value, &displacements_[0]);                                    //i.e. Calculate the size in bytes of
+  MPI_Get_address(&cell_.AxSplit, &displacements_[1]);                                    // each block, in this case the size of MPI_FLOAT_T.
+  MPI_Get_address(&cell_.depth, &displacements_[2]);
+  MPI_Get_address(&cell_.left, &displacements_[3]);                                    // each block, in this case the size of MPI_FLOAT_T.
+  MPI_Get_address(&cell_.right, &displacements_[4]);
+  for(int i=0; i<5; i++){
+    displacements_[i] = MPI_Aint_diff(displacements_[i], base_address_);               //
+  }
+  MPI_Datatype types_[5] = { MPI_DATA, MPI_INT, MPI_INT,MPI_INT,MPI_INT};
+  MPI_Type_create_struct(5, block_length_, displacements_, types_, &MPI_NODE);  // Create the datatype and set the typde available
+  MPI_Type_commit(&MPI_NODE);
+  return MPI_NODE;
 }
