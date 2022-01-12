@@ -134,7 +134,7 @@ node* build_mpi_tree(data* set, int dim){
         MPI_Recv(rcv_array,rcv_dim,MPI_NODE,rank+step,0,MPI_COMM_WORLD,&status);
         merge_array[0] = split_values[k];
         merge_array[0].left = 1;
-        merge_array[0].right = dim;
+        merge_array[0].right = dim + 1;
         k++;
         array_tree = expand(array_tree, rcv_array, merge_array, dim, rcv_dim);
         sleep(1);
