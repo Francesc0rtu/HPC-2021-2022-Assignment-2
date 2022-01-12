@@ -71,7 +71,7 @@ node* build_mpi_tree(data* set, int dim){
     if(rank==i){
       printf("///////////////  %d ////////////// \n",rank);
       print_tree_ascii(tree, 0, 0);
-      // print_array_node(tree,dim);
+      // print_tree(tree,dim);
     }
   }
 

@@ -1,5 +1,5 @@
 #include "utilities.h"
-#define COUNT 10
+#define COUNT 5
 
 
 /////////////////// PRINT FUNCTIONS ////////////////////
@@ -12,6 +12,7 @@ void print(data* set, int dim){
 
 
 void print_tree_ascii(node *root, int space, int i){
+  // Work only for small size of the input ~100-400
   // Increase distance between levels
   space += COUNT;
 
@@ -33,7 +34,10 @@ void print_tree_ascii(node *root, int space, int i){
   }
 }
 
-void print_array_node(node* array, int dim){
+void print_tree(node* array, int dim){
+  // Print on std output a list of nodes with the following format:
+  // [index in the array]_{(x,y),lh=<index of left child>, rh=<index of right child>, ax=<ax of splitting>}
+
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   printf("------------%d-----------\n",rank);
