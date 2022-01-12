@@ -1,10 +1,9 @@
 #include "utilities.h"
 #include "omp_tree.h"
+#include "mpi_tree.h"
 #include <unistd.h>
 
-int next_step(int step);
-data* resize(data* set, int dim);
-node* expand(node* array_tree, node* rcv_array, node* merge_array, int dim,int rcv_dim);
+
 
 node* build_mpi_tree(data* set, int dim){
   int rank,size;
@@ -26,8 +25,7 @@ node* build_mpi_tree(data* set, int dim){
   MPI_Type_create_struct(2, block_length, displacements, types, &MPI_DATA);  // Create the datatype and set the typde available
   MPI_Type_commit(&MPI_DATA);
 
-  node *tree;
-  tree = malloc(sizeof(tree)*dim);
+
   int num_step = 1, step = 1, split = Y;
   if(size > 2){
     do{
@@ -72,22 +70,11 @@ node* build_mpi_tree(data* set, int dim){
    depth++;
  }
 
-  printf("depth = %d \n", depth);
-  knode *root;
-
-  printf(":----------\n ");
-  print(set, dim);
-  sleep(1);
-
-  node* array_tree, array;
+  node* tree;
   #pragma omp parallel
   {
     #pragma omp single
-    {
-      array_tree=build_omp_array_tree(set, 0,dim-1,1-split,depth);
-      root = build_omp_tree(set,0,dim-1,1-split,depth);
-
-    }
+    tree=build_omp_tree(set, 0,dim-1,1-split,depth);
   }
 
   // array = tree_to_array(root, dim);
@@ -96,8 +83,8 @@ node* build_mpi_tree(data* set, int dim){
     sleep(1);
     if(rank==i){
       printf("///////////////  %d ////////////// \n",rank);
-      print_ktree_ascii(root, 0);
-      print_array_node(array_tree,dim);
+      print_tree_ascii(tree, 0, 0);
+      print_array_node(tree,dim);
 
     }
   }
@@ -130,40 +117,34 @@ node* build_mpi_tree(data* set, int dim){
   while(step<size){
     MPI_Barrier(MPI_COMM_WORLD);
     if(rank%(2*step)==0){
-      if(rank + step < size){    //ricevo da rank+step
-        node *rcv_array, *merge_array;
-        MPI_Recv(&rcv_dim, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD, &status);
-        // printf("sono %d e ricevo %d elmenti da %d \n", rank,rcv_dim,rank+step);
-        printf("il mio split value e (%d,%d) depth=%d \n", (split_values[k].value).x, (split_values[k].value).y, split_values[k].depth );
-        sleep(1);
+      if(rank + step < size){
+        MPI_Recv(&rcv_dim, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD, &status);   //recive the dimension of the tree to merge
+
+        node *rcv_array, *merge_array;                                          // Allocate memory for the rcv tree for the merged one
         rcv_array = malloc(sizeof(node)*rcv_dim);
         merge_array = malloc(sizeof(node)*(rcv_dim+dim+1));
-        MPI_Recv(rcv_array,rcv_dim,MPI_NODE,rank+step,0,MPI_COMM_WORLD,&status);
-        merge_array[0] = split_values[k];
+
+        MPI_Recv(rcv_array,rcv_dim,MPI_NODE,rank+step,0,MPI_COMM_WORLD,&status);  // Receive the tree
+        merge_array[0] = split_values[k];                                         // Assign the father values
         merge_array[0].left = 1;
         merge_array[0].right = dim + 1;
         k++;
-        array_tree = expand(array_tree, rcv_array, merge_array, dim, rcv_dim);
-        sleep(1);
-        dim = rcv_dim+dim+1;
-        // print_array_node(array_tree,dim);
+
+        tree = expand(tree, rcv_array, merge_array, dim, rcv_dim);              // Merge the father with the left-subtree and the right-subtree
+        dim = rcv_dim+dim+1;                                                    // Update the dimension of the tree
       }
     }else if(check == FALSE){    //mando a rank-step
-      // printf("sono %d e mando %d elmenti a %d \n", rank,dim,rank-step);
-      sleep(1);
-      MPI_Send(&dim,1,MPI_INT, rank-step, 0, MPI_COMM_WORLD);                 //Send the dimension
-      MPI_Send(array_tree, dim, MPI_NODE, rank-step, 0, MPI_COMM_WORLD);
-      free(array_tree);
-      ////////// c`e' da liberare l'albero
-      // free_tree(root);
-      check=TRUE;
+      MPI_Send(&dim,1,MPI_INT, rank-step, 0, MPI_COMM_WORLD);                 //Send the dimension of the tree to send
+      MPI_Send(tree, dim, MPI_NODE, rank-step, 0, MPI_COMM_WORLD);            // Send the tree
+      free(tree);                                                             // Free the memory: now my work is done!!
+      check=TRUE;                                                             // My work is done, I will do nothing anymore!
     }
     step = step*2;
   }
 
   if(rank == 0){
     printf("dim %d \n", dim);
-    print_array_node(array_tree,dim);
+    print_tree_ascii(tree,0,0);
   }
 
 
