@@ -7,25 +7,22 @@
 
 
 node* build_mpi_tree(data* set, int dim){
+  // This function divide the data-set among the MPI process, then each proces builds its tree
+  // calling the build_omp_tree routine. Then the MPI process send their subtree to the master.
+
   int rank,size;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
   MPI_Status status;
-  MPI_Datatype MPI_DATA = create_MPI_type_DATA();
-  MPI_Datatype MPI_NODE = create_MPI_type_NODE();
+  MPI_Datatype MPI_DATA = create_MPI_type_DATA();             // Create the MPI type for the struct data
+  MPI_Datatype MPI_NODE = create_MPI_type_NODE();             // Create the MPI type for the struct node
 
-
-  int num_step = 1, step = 1, split = Y;
-  if(size > 2){
-    do{
-      num_step++;
-      step = step*2;
-    }while(2*step<size);
-  }
 
   data max, min;
+  int num_step, step, split = Y,split_index, depth = 0;
+  initialize_step(&step, &num_step);
   node split_values[num_step];
-  int k = num_step, split_index, depth = 0;
+  int k = num_step;
 
   while(step>=1){
    split = 1 - split;
@@ -128,6 +125,19 @@ data* resize(data* set, int dim){
   }
   free(set);
   return aux;
+}
+
+void initialize_step(int* step, int *num_step){
+  int size;
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+  *num_step = 1;
+  *step = 1;
+  if(size > 2){
+    do{
+      *num_step++;
+      *step = *step*2;
+    }while(2*(*step)<size);
+  }
 }
 
 int next_step(int step){
