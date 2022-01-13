@@ -24,11 +24,33 @@ node* build_mpi_tree(data* set, int dim){
   node split_values[num_step];
   int k = num_step;
 
-  ///////////////////////////////////////// SENDING DATA TO MPI PROCESS //////////////////////////////////////////
+  ////////////////////////////////////////// DATA DISPLACEMENT WITH TREE-BASED METHOD //////////////////////
+  // In this portion of code the data are divided between all the MPI processes with a tree method.       //
+  // Each time that a process have to send to his child-process,                                          //
+  // it divide the data in two part and save the split value (that will be a node of the final tree).     //
+  // In this way, at the end of this routine each process has received an array of a subset of data-set.  //
+  // This is an example with 11 processors:                                                               //
+  //                                                                                                      //
+  //                                              0                                                       //
+  //                                             / \                                                      //
+  //                                            /   \                                                     //
+  //                                           /     \                                                    //
+  //                                          /       \                                                   //
+  //                                         /         \                                                  //
+  //                                        0           8          --- step==4                            //
+  //                                       / \           \                                                //
+  //                                      /   \           \                                               //
+  //                                     /     \           \                                              //
+  //                                    /       \           \                                             //
+  //                                   0        4           8        --- step==2                          //
+  //                                  / \      / \         / \                                            //
+  //                                 /   \    /   \       /   \                                           //
+  //                                0     2   4    6      8   10      --- step==1                         //
+  //                               / \   / \ / \  / \    / \   |                                          //
+  //                              0  1  2  3 4  5 6  7  8  9  10                                          //
+  //                                                                                                      //
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
-  /////////////////////////////////////////////////////////////////////////////////////////////////////////////
   while(step>=1){
    split = 1 - split;
 
@@ -76,6 +98,28 @@ node* build_mpi_tree(data* set, int dim){
       // print_tree(tree,dim);
     }
   }
+
+  //////////////////////////////////////// SEND TREES TO THE MASTER //////////////////////////////////////////////
+  // At each step half of the MPI processes involved send their tree the other half processes:                  //
+  // these ones will merge their tree with the tree recived, and then the step is incremented.                  //
+  // This is an example with 8 MPI processes.                                                                   //
+  //                                                                                                            //
+  //                             0     1     2     3     4     5     6     7                                    //
+  //                               \   /       \   /       \   /       \   /                                    //
+  //                                 0           2           4           6          ---- Step=1                 //
+  //                                  \         /             \         /                                       //
+  //                                   \       /               \       /                                        //
+  //                                    \     /                 \     /                                         //
+  //                                       0                       4                ---- step=2                 //
+  //                                        \                     /                                             //
+  //                                         \                   /                                              //
+  //                                          \                 /                                               //
+  //                                           \               /                                                //
+  //                                            \             /                                                 //
+  //                                                  0                           ---- step=4                   //
+  //                                                                                                            //
+  //                                                                                                            //
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   int check = FALSE, rcv_dim;
   step=1;
