@@ -18,12 +18,17 @@ node* build_mpi_tree(data* set, int dim){
   MPI_Datatype MPI_NODE = create_MPI_type_NODE();             // Create the MPI type for the struct node
 
 
-  data max, min;
+  data max, min;                                                  // Declare and initialize basic variable for the splitting part
   int num_step, step, split = Y,split_index, depth = 0;
   initialize_step(&step, &num_step);
   node split_values[num_step];
   int k = num_step;
 
+  ///////////////////////////////////////// SENDING DATA TO MPI PROCESS //////////////////////////////////////////
+
+
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////
   while(step>=1){
    split = 1 - split;
 
