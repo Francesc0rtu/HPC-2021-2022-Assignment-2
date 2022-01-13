@@ -1,5 +1,5 @@
 #include "utilities.h"
-#define COUNT 10
+#define COUNT 5
 
 
 /////////////////// PRINT FUNCTIONS ////////////////////
@@ -10,37 +10,34 @@ void print(data* set, int dim){
   }printf("\n");
 }
 
-void print_ktree(knode* root){
-  if(root!=NULL){
-    printf("{(%d,%d),%d, %d} ", (root->value).x, (root->value).y, root->AxSplit, root->dep );
-    print_ktree(root->left);
-    print_ktree(root->right);
-  }
-}
 
-void print_ktree_ascii(knode *root, int space){
-  // Base case
-  if (root == NULL)
-      return;
-
+void print_tree_ascii(node *root, int space, int i){
+  // Work only for small size of the input ~100-400
   // Increase distance between levels
   space += COUNT;
 
   // Process right child first
-  print_ktree_ascii(root->right, space);
+  if(root[i].right != -1){
+    print_tree_ascii(root, space, root[i].right);
+  }
 
   // Print current node after space
   // count
   printf("\n");
-  for (int i = COUNT; i < space; i++)
+  for (int j = COUNT; j < space; j++)
       printf(" ");
-  printf("[(%d,%d),%d,%d]\n", (root->value).x, (root->value).y, root->AxSplit, root->dep);
+  printf("[(%d,%d),%d,%d]\n", (root[i].value).x, (root[i].value).y, root[i].AxSplit, root[i].depth);
 
   // Process left child
-  print_ktree_ascii(root->left, space);
+  if(root[i].left != -1){
+    print_tree_ascii(root, space, root[i].left);
+  }
 }
 
-void print_array_node(node* array, int dim){
+void print_tree(node* array, int dim){
+  // Print on std output a list of nodes with the following format:
+  // [index in the array]_{(x,y),lh=<index of left child>, rh=<index of right child>, ax=<ax of splitting>}
+
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   printf("------------%d-----------\n",rank);
@@ -193,53 +190,35 @@ int split_and_sort(data* set, data max, data min, int left, int right, int ax){
 
 /////////////////// TREE TO ARRAY AND VICEVERSA /////////////////////
 
-node* tree_to_array(knode* root, int dim){////////////// SERIAL /////////////7
-  node *array;
-  array = malloc(sizeof(node)*dim);
-  int i=0;
-  i=map_to_array(array,root,dim,i);
-  // print_array_knode(array,dim);
-  return array;
-}
-
-int map_to_array(node* array, knode* root, int dim, int i){
-  int j;
-  if(i < dim){
-    if(root!=NULL){
-      array[i].value = root->value;
-      array[i].AxSplit = root->AxSplit;
-      array[i].depth = root->dep;
-      array[i].left = -1;
-      array[i].right = -1;
-      j=i;
-      i++;
-
-      if(root->left != NULL){
-     // #pragma omp task firstprivate(array, root, dim)
-      array[j].left = i;
-      i = map_to_array(array, root->left, dim, i);
+node* expand(node* array_tree, node* rcv_array, node* merge_array, int dim,int rcv_dim){
+  #pragma omp parallel
+  {
+    #pragma omp parallel for
+    for(int i=0; i<dim; i++){
+      merge_array[i+1] = array_tree[i];
+      if(merge_array[i+1].left != -1){
+        merge_array[i+1].left = merge_array[i+1].left + 1;
+      }
+      if(merge_array[i+1].right != -1){
+        merge_array[i+1].right = merge_array[i+1].right + 1;
+      }
     }
-      if(root->right != NULL){
-     // #pragma omp task firstprivate(array, root, dim)
-      array[j].right = i;
-      i =  map_to_array(array, root->right, dim, i);
-    }
-
+    #pragma omp parallel for
+    for(int i=0; i<rcv_dim; i++){
+      merge_array[i+dim+1] = rcv_array[i];
+      if(merge_array[i+dim+1].left != -1){
+        merge_array[i+dim+1].left = merge_array[i+dim+1].left + dim + 1;
+      }
+      if(merge_array[i+dim+1].right != -1){
+        merge_array[i+dim+1].right = merge_array[i+dim+1].right + dim + 1;
+      }
     }
   }
-  return i;
+  if(dim > 0){
+    free(array_tree);
+  }
+  if(rcv_dim > 0){
+    free(rcv_array);
+  }
+  return merge_array;
 }
-
-knode* array_to_tree(knode* array, int dim){
-  knode* root;
-  int i;
-  map_to_tree(array, root, dim, i);
-}
-
-void map_to_tree(knode* array, knode* root, int dim, int i){
-
-}
-
-// void merge_array_tree(knode* merge, knode* subleft, knode *subright, int dimlh, int dimrh){
-//
-// }
