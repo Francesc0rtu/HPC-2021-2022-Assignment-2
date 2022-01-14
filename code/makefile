@@ -17,10 +17,10 @@ main.o:	main.c utilities.h mpi_tree.h
 utilities.o: utilities.c utilities.h
 	$(CC) $(CFLAGS) -c  utilities.c -o utilities.o
 
-mpi_tree.o: mpi_tree.c omp_tree.h utilities.h
+mpi_tree.o: mpi_tree.c mpi_tree.h utilities.h omp_tree.h
 	$(CC) $(CFLAGS) -c  mpi_tree.c -o mpi_tree.o
 
-omp_tree.o: omp_tree.c utilities.h
+omp_tree.o: omp_tree.c omp_tree.h utilities.h
 	$(CC) $(CFLAGS) -c  omp_tree.c -o omp_tree.o
 clean:
 	$(RM) kdtree.x *.o *~
