@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -l walltime=02:00:00
 #PBS -q dssc
-#PBS -l nodes=2:ppn=2
+#PBS -l nodes=1:ppn=24
 
 cd $PBS_O_WORKDIR
 cd ../code
@@ -14,7 +14,7 @@ export 		OMP_PLACES=cores
 export 		OMP_PROC_BIND=close
 export		MV2_ENABLE_AFFINITY=0
 
-mpirun -np 4 --map-by socket kdtree.x 10000 > output
+mpirun -np 2 --map-by socket kdtree.x 10000 > output
 
 make clean
 git add output time
