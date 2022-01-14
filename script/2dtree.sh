@@ -4,7 +4,7 @@
 #PBS -l nodes=2:ppn=2
 
 cd $PBS_O_WORKDIR
-module load load openmpi-4.1.1+gnu-9.3.0
+module load openmpi-4.1.1+gnu-9.3.0
 make
 cp kdtree.x ../output/kdtree.x
 cd ../output
