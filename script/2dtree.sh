@@ -9,7 +9,11 @@ module load openmpi-4.1.1+gnu-9.3.0
 make
 cp kdtree.x ../output/kdtree.x
 cd ../output
-export OMP_NUM_THREADS=12
+export    OMP_NUM_THREADS=12
+export 		OMP_PLACES=cores
+export 		OMP_PROC_BIND=close
+export		MV2_ENABLE_AFFINITY=0
+
 mpirun -np 4 --map-by socket kdtree.x 10000 > output
 
 make clean
