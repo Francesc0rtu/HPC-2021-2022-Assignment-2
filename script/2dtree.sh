@@ -3,7 +3,7 @@
 #PBS -q dssc
 #PBS -WMail_Users=francescortu@live.it
 #PBS -m -ae
-#PBS nodes=2:ppn=2
+#PBS -l nodes=2:ppn=2
 
 cd $PBS_O_WORKDIR
 module load openmpi-
