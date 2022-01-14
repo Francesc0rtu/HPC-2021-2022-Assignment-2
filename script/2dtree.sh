@@ -12,7 +12,7 @@ cd ../output
 export OMP_NUM_THREADS=12
 mpirun -np 4 --map-by socket kdtree.x 10000 > output
 
-rm kdtree.x
+make clean
 git add output time
 git commit -m "new output from orfeo"
 git push
