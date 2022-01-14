@@ -9,7 +9,7 @@ all: kdtree
 
 kdtree:	main.o utilities.o mpi_tree.o omp_tree.o
 	$(CC) $(CFLAGS)  main.o utilities.o mpi_tree.o omp_tree.o -o  kdtree.x
-	
+	$(RM) *.o
 main.o:	main.c utilities.h mpi_tree.h
 	$(CC) $(CFLAGS) -c  main.c -o main.o
 
@@ -23,3 +23,4 @@ omp_tree.o: omp_tree.c omp_tree.h utilities.h
 	$(CC) $(CFLAGS) -c  omp_tree.c -o omp_tree.o
 clean:
 	$(RM) kdtree.x *.o *~
+	$(RM) input time

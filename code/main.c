@@ -3,7 +3,7 @@
 #include <mpi.h>
 #include <omp.h>
 
-data* init_random_set(int dim);
+void init_random_set(int dim);
 
 int main(int argc, char* argv[]){
   int rank,size, provided = 0;
@@ -11,14 +11,21 @@ int main(int argc, char* argv[]){
   MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);                  // MPI init for multi-threading hybrid omp
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);                                        // Get rank and size
   MPI_Comm_size(MPI_COMM_WORLD, &size);
+  FILE *fptr, *input;
 
   int dim = atoi(argv[1]);
   data* set;
+
   if(rank == 0){
-    set = init_random_set(dim);
-    print(set, dim);
+    init_random_set(dim);
+    set = malloc(sizeof(data)*dim);
+    input = fopen("input", "r");
+    for(int i=0; i<dim; i++){
+      fscanf(input, "%f %f", &set[i].x, &set[i].y);
+    }
+    fclose(input);
   }
-  FILE *fptr;
+
   if(rank == 0){
     fptr = fopen("time", "w");
     fprintf(fptr, "COMPUTATIONAL TIME MPI-OMP 2DTREE:\n");
@@ -46,13 +53,16 @@ int main(int argc, char* argv[]){
 }
 
 
-data* init_random_set(int dim){
-  data *aux;
-  aux = malloc(sizeof(data)*dim);
+void init_random_set(int dim){
+  float_t x;
+  float_t y;
+  FILE *out;
+  out =fopen("input", "w" );
   srand(time(NULL));
   for (size_t i = 0; i < dim; i++) {
-    aux[i].x = rand() / (float_t) 1000;
-    aux[i].y = rand() / (float_t) 1000;
+    x = rand() / (float_t) 1000;
+    y = rand() / (float_t) 1000;
+    fprintf(out, "%f %f\n", x,y);
   }
-  return aux;
+  fclose(out);
 }
