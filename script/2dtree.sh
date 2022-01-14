@@ -4,10 +4,15 @@
 #PBS -l nodes=2:ppn=2
 
 cd $PBS_O_WORKDIR
-module load openmpi-
+module load load openmpi-4.1.1+gnu-9.3.0
 make
-mpirun -np 4 kdtree.x 10000 > output
-git add output
+cp kdtree.x ../output/kdtree.x
+cd ../output
+export OMP_NUM_THREADS=12
+mpirun -np 4 --map-by socket kdtree.x 10000 > output
+
+rm kdtree.x
+git add output time
 git commit -m "new output from orfeo"
 git push
 
