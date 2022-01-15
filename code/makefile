@@ -22,5 +22,4 @@ mpi_tree.o: mpi_tree.c mpi_tree.h utilities.h omp_tree.h
 omp_tree.o: omp_tree.c omp_tree.h utilities.h
 	$(CC) $(CFLAGS) -c  omp_tree.c -o omp_tree.o
 clean:
-	$(RM) kdtree.x *.o *~
-	$(RM) input time
+	$(RM) kdtree.x *.o *~ input
