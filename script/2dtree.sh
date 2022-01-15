@@ -13,7 +13,7 @@ export 		OMP_PLACES=cores
 export 		OMP_PROC_BIND=close
 export		MV2_ENABLE_AFFINITY=0
 
-mpirun -np 2 --map-by socket --mca btl ^openib kdtree.x 10000 > output
+mpirun -np 2 --map-by socket --mca btl ^openib kdtree.x 100000000 > output
 
 
 
