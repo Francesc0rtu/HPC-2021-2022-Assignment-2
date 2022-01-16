@@ -8,7 +8,7 @@ void init_random_set(int dim);
 int main(int argc, char* argv[]){
   int rank,size, provided = 0;
   double start_time, end_time;
-  MPI_Init_thread(&argc, &argv, MPI_THREAD_FUNNELED, &provided);                  // MPI init for multi-threading hybrid omp
+  MPI_Init(&argc, &argv);                  // MPI init for multi-threading hybrid omp
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);                                        // Get rank and size
   MPI_Comm_size(MPI_COMM_WORLD, &size);
   FILE *fptr, *input;
