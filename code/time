@@ -1,0 +1,5 @@
+COMPUTATIONAL TIME MPI-OMP 2DTREE:
+sending msg time = 0.045832 
+omp time = 0.004822 
+receving msg time = 0.012751 
+total time = 0.085826 

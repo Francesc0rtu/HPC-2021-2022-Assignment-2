@@ -25,7 +25,7 @@ node* build_mpi_tree(data* set, int dim){
   initialize_step(&step, &num_step);
   node split_values[num_step];
   int k = num_step;
-
+  printf("k=%d\n",k);
   ////////////////////////////////////////// DATA DISPLACEMENT WITH TREE-BASED METHOD //////////////////////
   // In this portion of code the data are divided between all the MPI processes with a tree method.       //
   // Each time that a process have to send to his child-process,                                          //
@@ -64,10 +64,10 @@ node* build_mpi_tree(data* set, int dim){
        split_index = split_and_sort(set, max, min, 0, dim-1, split);            // Find the index of the splitting value of the set
        int new_dim = split_index, send_dim = (dim - new_dim -1);
 
-       k--;
        split_values[k].value = set[split_index];                                // Save the split value to re-build the tree in the next routine
        split_values[k].AxSplit = split;
        split_values[k].depth = depth ;
+       k--;
 
        MPI_Send(&send_dim, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD);            // Send the dimension of the portion of data to send to the other process
        MPI_Send(set+split_index+1, send_dim, MPI_DATA, rank+step,0, MPI_COMM_WORLD);      // Send the data
@@ -95,6 +95,7 @@ node* build_mpi_tree(data* set, int dim){
   omp_time = MPI_Wtime();
   #pragma omp parallel
   {
+    printf("Sono il processo %d e thread %d \n", rank, omp_get_thread_num());
     #pragma omp single
     tree=build_omp_tree(set, 0,dim-1,1-split,depth);                          // Each MPI process build its tree in a multi-threading way
   }
@@ -137,7 +138,7 @@ node* build_mpi_tree(data* set, int dim){
   MPI_Barrier(MPI_COMM_WORLD);
   mpi_time = MPI_Wtime();
   int check = FALSE, rcv_dim;
-  step=1;
+  step=1; k++;
   while(step<size){
     if(rank%(2*step)==0){                 // This are the receving process
       if(rank + step < size){
@@ -148,11 +149,10 @@ node* build_mpi_tree(data* set, int dim){
         merge_array = malloc(sizeof(node)*(rcv_dim+dim+1));
 
         MPI_Recv(rcv_array,rcv_dim,MPI_NODE,rank+step,0,MPI_COMM_WORLD,&status);  // Receive the tree
-        merge_array[0] = split_values[k];                                         // Assign the father values
+        merge_array->value = split_values[k].value;    // Assign the father values
         merge_array[0].left = 1;
         merge_array[0].right = dim + 1;
         k++;
-
         tree = expand(tree, rcv_array, merge_array, dim, rcv_dim);              // Merge the father with the left-subtree and the right-subtree
         dim = rcv_dim+dim+1;                                                    // Update the dimension of the tree
       }

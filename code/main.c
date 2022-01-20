@@ -46,7 +46,7 @@ int main(int argc, char* argv[]){
     fptr = fopen("time", "a");
     fprintf(fptr,"total time = %f \n", end_time);
     fclose(fptr);
-    print_tree_ascii(tree, dim, 0);
+    // print_tree_ascii(tree, dim, 0);
   }
 
   MPI_Finalize();
@@ -56,9 +56,10 @@ int main(int argc, char* argv[]){
 void init_random_set(int dim){
   float_t x;
   float_t y;
+
   FILE *out;
   out =fopen("input", "w" );
-  srand(time(NULL));
+  srand(1);
   for (size_t i = 0; i < dim; i++) {
     x = rand() / (float_t) 1000;
     y = rand() / (float_t) 1000;
