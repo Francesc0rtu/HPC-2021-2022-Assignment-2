@@ -59,7 +59,7 @@ void init_random_set(int dim){
 
   FILE *out;
   out =fopen("../input/input", "w" );
-  srand(1);
+  srand(time(NULL));
   for (size_t i = 0; i < dim; i++) {
     x = rand() / (float_t) 1000;
     y = rand() / (float_t) 1000;

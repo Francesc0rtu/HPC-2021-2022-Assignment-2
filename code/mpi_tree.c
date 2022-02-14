@@ -86,7 +86,7 @@ node* build_mpi_tree(data* set, int dim){
  MPI_Barrier(MPI_COMM_WORLD);
  mpi_time = MPI_Wtime() - mpi_time;
  if(rank == 0){
-   fptr = fopen("time", "a");
+   fptr = fopen("../output/time", "a");
    fprintf(fptr,"sending msg time = %f \n", mpi_time);
    fclose(fptr);
  }
@@ -101,7 +101,7 @@ node* build_mpi_tree(data* set, int dim){
   }
   omp_time = MPI_Wtime() - omp_time;
   if(rank == 0){
-    fptr = fopen("time", "a");
+    fptr = fopen("../output/time", "a");
     fprintf(fptr,"omp time = %f \n", omp_time);
     fclose(fptr);
   }
@@ -168,7 +168,7 @@ node* build_mpi_tree(data* set, int dim){
   mpi_time = MPI_Wtime() - mpi_time;
 
   if(rank == 0){
-    fptr = fopen("time", "a");
+    fptr = fopen("../output/time", "a");
     fprintf(fptr,"receving msg time = %f \n", mpi_time);
     fclose(fptr);
   }
