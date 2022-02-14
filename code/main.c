@@ -19,7 +19,7 @@ int main(int argc, char* argv[]){
   if(rank == 0){
     init_random_set(dim);
     set = malloc(sizeof(data)*dim);
-    input = fopen("input", "r");
+    input = fopen("../input/input", "r");
     for(int i=0; i<dim; i++){
       fscanf(input, "%f %f", &set[i].x, &set[i].y);
     }
@@ -27,7 +27,7 @@ int main(int argc, char* argv[]){
   }
 
   if(rank == 0){
-    fptr = fopen("time", "w");
+    fptr = fopen("../output/time", "w");
     fprintf(fptr, "COMPUTATIONAL TIME MPI-OMP 2DTREE:\n");
     fclose(fptr);
   }
@@ -43,7 +43,7 @@ int main(int argc, char* argv[]){
   end_time = MPI_Wtime() - start_time;
 
   if(rank == 0){
-    fptr = fopen("time", "a");
+    fptr = fopen("../output/time", "a");
     fprintf(fptr,"total time = %f \n", end_time);
     fclose(fptr);
     // print_tree_ascii(tree, dim, 0);
@@ -58,7 +58,7 @@ void init_random_set(int dim){
   float_t y;
 
   FILE *out;
-  out =fopen("input", "w" );
+  out =fopen("../input/input", "w" );
   srand(1);
   for (size_t i = 0; i < dim; i++) {
     x = rand() / (float_t) 1000;
