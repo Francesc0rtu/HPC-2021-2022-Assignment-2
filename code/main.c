@@ -27,9 +27,15 @@ int main(int argc, char* argv[]){
   }
 
   if(rank == 0){
-    fptr = fopen("../output/time", "w");
-    fprintf(fptr, "COMPUTATIONAL TIME MPI-OMP 2DTREE:\n");
-    fclose(fptr);
+    #pragma omp parallel
+    {
+      #pragma omp single
+      {
+        fptr = fopen("../output/time", "w");
+        fprintf(fptr, "%d,%d,", size, omp_get_num_threads());
+        fclose(fptr);
+      }
+    }
   }
 
   node* tree;
@@ -44,7 +50,7 @@ int main(int argc, char* argv[]){
 
   if(rank == 0){
     fptr = fopen("../output/time", "a");
-    fprintf(fptr,"total time = %f \n", end_time);
+    fprintf(fptr,"\t%f\n", end_time);
     fclose(fptr);
     // print_tree_ascii(tree, dim, 0);
   }
