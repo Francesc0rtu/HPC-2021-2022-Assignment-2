@@ -23,7 +23,7 @@ else
     for j in {1..12}
     do
       export    OMP_NUM_THREADS=${j}
-      mpirun -np ${i} --map-by socket --mca btl ^openib kdtree.x 100000000 > "../output/output_${i}_${j}"
+      mpirun -np ${i} --map-by socket --mca btl ^openib kdtree.x 1000000 > "../output/output_${i}_${j}"
       cat ../output/time >> ../output/time.csv
     done
   done
