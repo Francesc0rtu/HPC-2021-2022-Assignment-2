@@ -13,7 +13,7 @@ else
   make
   printf '%s\t%s\t%s\t%s\t%s\t%s\n' 'MPI process' 'OMP thread' 'Send MSG,' 'OMP time,' 'Recv msg,' 'total time'  > ../output/time_mpi_omp.csv
   export    OMP_NUM_THREADS=1
-  export 		OMP_PLACES=cores
+  export 		OMP_PLACES=socket
   export 		OMP_PROC_BIND=close
   export		MV2_ENABLE_AFFINITY=0
 
