@@ -5,14 +5,14 @@
 //////////////////////////// MULTI-THREADING BUILDING TREE ///////////////////////////////////////////////////////////
 // This function take in input the dataset and return the tree. The tree is saved as an array of                    //
 // the struct node:                                                                                                 //
-//                            -----------------------------                                                         //
-//                            |           (x,y)           |  <- (x,y) are the point                                 //
-//      struct node ----->>   -----------------------------                                                         //
-//                            | left | right | ax | depth |   <- left and right are the index                       //
-//                            -----------------------------       of the left child and right child                 //
+//                            -------------------------------                                                       //
+//                            |           (x,y)             |  <- (x,y) is the point                                //
+//      struct node ----->>   -------------------------------                                                       //
+//                            | left | right | axis | depth |   <- left and right are the index                     //
+//                            -------------------------------     of the left child and right child                 //
 //                                                                (-1 if the child doesn't exist)                   //
 //                                                                                                                  //
-// The array is saved in a in-order visit of the tree: in this way to merge a node with its left and                //
+// The array is saved in a in-order visit of the tree: in this way merging a node with its left and                 //
 // right sub-tree is simply done like this:                                                                         //
 // --------       ------------------------      --------------------     ----------------------------------------   //
 // | node |   +   |  left sub tree        |  +  | right sub tree   |  == |node | left sub tree | right sub tree |   //

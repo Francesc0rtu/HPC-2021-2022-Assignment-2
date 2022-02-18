@@ -1,0 +1,12 @@
+---
+title: "HPC2-kdtree"
+author: "Francesco Ortu"
+date: "2/17/2022"
+output: html_document
+---
+
+```{r load}
+setwd("~/Repository/HPC-2021-2022-Assignment-2/analysis/")
+time1 <- data.frame(read.csv("../output/time_gpu.csv"))
+```
+
