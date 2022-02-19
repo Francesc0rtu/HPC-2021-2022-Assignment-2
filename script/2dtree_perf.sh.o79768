@@ -1,0 +1,6 @@
+mpicc -fopenmp -std=c99 -c  main.c -o main.o
+mpicc -fopenmp -std=c99 -c  utilities.c -o utilities.o
+mpicc -fopenmp -std=c99 -c  mpi_tree.c -o mpi_tree.o
+mpicc -fopenmp -std=c99 -c  omp_tree.c -o omp_tree.o
+mpicc -fopenmp -std=c99  main.o utilities.o mpi_tree.o omp_tree.o -o  kdtree.x
+rm -f *.o
