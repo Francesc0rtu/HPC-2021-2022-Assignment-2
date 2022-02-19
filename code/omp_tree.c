@@ -23,6 +23,8 @@
 node* build_omp_tree(data* set, int left,int right,int ax, int depth){
   // This function recive in input the data-set, the left and right index of the data-set that
   // it will be considered, the ax of the splitting and the depth of the tree.
+  int rank; MPI_Comm_rank(MPI_COMM_WORLD,&rank);
+  printf("Sono il processo %d e thread %d \n", rank, omp_get_thread_num());
 
   if(left==right){  // If left == right it returns a leaf
     node* aux;
