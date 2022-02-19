@@ -49,10 +49,10 @@ int main(int argc, char* argv[]){
   end_time = MPI_Wtime() - start_time;
 
   if(rank == 0){
+    // print_tree_ascii(tree, dim, 0);
     fptr = fopen("../output/time", "a");
     fprintf(fptr,"\t%f\n", end_time);
     fclose(fptr);
-    // print_tree_ascii(tree, dim, 0);
   }
 
   MPI_Finalize();

@@ -25,7 +25,7 @@ node* build_mpi_tree(data* set, int dim){
   initialize_step(&step, &num_step);
   node split_values[num_step];
   int k = num_step;
-  printf("k=%d\n",k);
+  // printf("k=%d\n",k);
   ////////////////////////////////////////// DATA DISPLACEMENT WITH TREE-BASED METHOD //////////////////////
   // In this portion of code the data are divided between all the MPI processes with a tree method.       //
   // Each time that a process have to send to his child-process,                                          //
@@ -95,7 +95,7 @@ node* build_mpi_tree(data* set, int dim){
   omp_time = MPI_Wtime();
   #pragma omp parallel
   {
-    printf("Sono il processo %d e thread %d \n", rank, omp_get_thread_num());
+    // printf("Sono il processo %d e thread %d \n", rank, omp_get_thread_num());
     #pragma omp single
     tree=build_omp_tree(set, 0,dim-1,1-split,depth);                          // Each MPI process build its tree in a multi-threading way
   }
