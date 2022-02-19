@@ -51,7 +51,7 @@ node* build_omp_tree(data* set, int left,int right,int ax, int depth){
 
     if(left <= index_split -1){                   // If exist a left child(or a sub-tree)
       #pragma omp task firstprivate(set,left,right,index_split,ax,depth) shared(left_array)
-      left_array = build_omp_tree(set,left, index_split -1, 1-ax, depth+1);
+      {left_array = build_omp_tree(set,left, index_split -1, 1-ax, depth+1);}
       left_dim = index_split - left;
       merged[0].left = 1;                 // The left child of the father is always the array[1]
     }else{                      // In this case doesn't exist a left child
@@ -61,7 +61,7 @@ node* build_omp_tree(data* set, int left,int right,int ax, int depth){
 
     if(index_split + 1 <= right){              // If exist a right child(or a sub-tree)
       #pragma omp task firstprivate(set, index_split,right,ax,depth) shared(right_array)
-      right_array = build_omp_tree(set,index_split + 1, right, 1-ax, depth+1);
+      {right_array = build_omp_tree(set,index_split + 1, right, 1-ax, depth+1);}
       right_dim = right - index_split ;
       if(left_dim == 0){                    // If the left child doesn't exist the right child is in the position array[1]
         merged[0].right = 1;
