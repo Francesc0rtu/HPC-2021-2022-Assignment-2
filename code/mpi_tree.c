@@ -1,4 +1,5 @@
 #include "utilities.h"
+#include "utilities_omp.h"
 #include "mpi_tree.h"
 #include "omp_tree.h"
 #include <unistd.h>
@@ -59,9 +60,9 @@ node* build_mpi_tree(data* set, int dim){
    split = 1 - split;
    if(rank%(2*step)==0){                             // This one are the sending processors
      if(rank + step < size){                        // The rcv process must exist
-       find_max_min(&max, &min, set, dim);          // Find max and min in the set, both for x and y
+       find_max_min_omp(&max, &min, set, dim);          // Find max and min in the set, both for x and y
 
-       split_index = split_and_sort(set, max, min, 0, dim-1, split);            // Find the index of the splitting value of the set
+       split_index = split_and_sort_omp(set, max, min, 0, dim-1, split);            // Find the index of the splitting value of the set
        int new_dim = split_index, send_dim = (dim - new_dim -1);
 
        split_values[k].value = set[split_index];                                // Save the split value to re-build the tree in the next routine
