@@ -13,6 +13,9 @@ int main(int argc, char* argv[]){
   MPI_Comm_size(MPI_COMM_WORLD, &size);
   FILE *fptr, *input;
 
+  omp_set_dynamic(1);
+  omp_set_num_threads(atoi(argv[2]));
+
   int dim = atoi(argv[1]);
   data* set;
 
