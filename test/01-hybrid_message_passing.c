@@ -22,13 +22,12 @@ int main(int argc, char *argv[]){
   if(rank == 0){
     messaggio = 2022;
   }
-  MPI_Send(&messaggio, 1, MPI_INT, 2, 0, MPI_COMM_WORLD);
-  MPI_Recv(&messaggio, 1, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+
   #pragma omp parallel
     {int cond=0;
     int cpu_num = sched_getcpu();
     printf("ciao, io sono il thread %d con rank_MPI %d on CPU:%d \t il mio messaggio è %d \n", omp_get_thread_num(), rank, cpu_num, messaggio);
-	while(cond == 0) {}
+	
     }
 
   MPI_Finalize();
