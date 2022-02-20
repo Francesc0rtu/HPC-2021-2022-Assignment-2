@@ -71,8 +71,8 @@ void init_random_set(int dim){
   out =fopen("../input/input", "w" );
   srand(time(NULL));
   for (size_t i = 0; i < dim; i++) {
-    x = rand() / (float_t) 1000;
-    y = rand() / (float_t) 1000;
+    x = rand() / (float_t) 100000;
+    y = rand() / (float_t) 100000;
     fprintf(out, "%f %f\n", x,y);
   }
   fclose(out);

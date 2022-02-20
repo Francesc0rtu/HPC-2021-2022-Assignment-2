@@ -94,21 +94,15 @@ node* build_mpi_tree(data* set, int dim){
  //////////////////////////////////// SINGLE PROCESS BUIDLING TREE ////////////////////////////////////////////
 
   node* tree;
-  MPI_Barrier(MPI_COMM_WORLD);
-  omp_time = MPI_Wtime();
+
   #pragma omp parallel
   {
-    // printf("Sono il processo %d e thread %d \n", rank, omp_get_thread_num());
+     // printf("Sono il processo %d e thread %d \n", rank, omp_get_thread_num());
     #pragma omp single
-    tree=build_omp_tree(set, 0,dim-1,1-split,depth);                          // Each MPI process build its tree in a multi-threading way
+    tree=build_omp_tree(set,dim,1-split,depth);                          // Each MPI process build its tree in a multi-threading way
   }
-  
-  omp_time = MPI_Wtime() - omp_time;
-  if(rank == 0){
-    fptr = fopen("../output/time", "a");
-    fprintf(fptr,"\t%f,", omp_time);
-    fclose(fptr);
-  }
+
+
   // for(int i=0; i<size; i++){
   //   sleep(1);
   //   if(rank==i){

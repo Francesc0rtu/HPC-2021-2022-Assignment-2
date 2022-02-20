@@ -24,6 +24,8 @@
 
 #define X 0
 #define Y 1
+
+#define COUNT 5
 ///////////////////////// STRUCT /////////////////////////////////
 
 typedef struct {
