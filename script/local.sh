@@ -2,7 +2,7 @@
 
 if [ $1 == "--clean" ]; then
   cd ../output
-  rm time* output*
+  rm  output*
 else
   cd ../code
   make
@@ -15,9 +15,8 @@ else
     for j in {1..16}
     do
 	export OMP_NUM_THREADS=${j}
-      ./kdtree.x 1000000 > "../output/output_${i}_${j}"
-
-      cat ../output/time >> ../output/time.csv
+     mpirun -np 4 --map-by socket --mca btl ^openib ./kdtree.x 10000000 
+     cat ../output/time >> ../output/time.csv
     done
   done
 fi

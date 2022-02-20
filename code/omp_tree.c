@@ -1,7 +1,13 @@
+#define _POSIX_C_SOURCE 199309L
 #include "utilities.h"
+#include "utilities_omp.h"
 #include "omp_tree.h"
 #include <unistd.h>
 #include <sched.h>
+#include <time.h>
+#include <stdlib.h>
+
+#define CPU_TIME (clock_gettime( CLOCK_REALTIME, &ts ), (double)ts.tv_sec+(double)ts.tv_nsec*1e-9)
 
 
 node* build_omp_tree(data* set,int dim, int ax, int depth){
@@ -10,9 +16,20 @@ node* build_omp_tree(data* set,int dim, int ax, int depth){
   int rank;
   double omp_time, convert_time;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  omp_time = omp_get_wtime();
-  root=build_tree(set, 0, dim -1 , ax, depth);
-  omp_time = omp_get_wtime() - omp_time;
+  omp_time = MPI_Wtime();
+
+  struct timespec ts;
+  double tstart, tend;
+  tstart = CPU_TIME;
+  #pragma omp parallel
+     {
+      #pragma omp single
+      root=build_tree(set, 0, dim -1 , ax, depth);
+     }
+  tend = CPU_TIME;
+  omp_time = MPI_Wtime() - omp_time;
+
+
 
   vtree = malloc(sizeof(node)*dim);
   convert_time = MPI_Wtime();
@@ -22,14 +39,14 @@ node* build_omp_tree(data* set,int dim, int ax, int depth){
   if(rank == 0){
     FILE *fptr;
     fptr = fopen("../output/time", "a");
-    fprintf(fptr,"\t%f,\t%f,", omp_time, convert_time);
+    fprintf(fptr,"\t%f,\t%f,", tend-tstart, convert_time);
     fclose(fptr);
   }
   return vtree;
 }
 
 tree_node* build_tree(data* set, int left,int right,int ax, int depth){
-  printf("thread:%d, cpu=%d\n", omp_get_thread_num(), sched_getcpu());
+  // printf("thread:%d, cpu=%d\n", omp_get_thread_num(), sched_getcpu());
   if(left > right){
     return NULL;
   }
@@ -41,16 +58,17 @@ tree_node* build_tree(data* set, int left,int right,int ax, int depth){
     root -> depth = depth;
     root -> dim_sub_left = 0;
     root -> dim_sub_right = 0;
-    root -> left = NULL;
+    root -> left = NULL;  
     root -> right = NULL;
     return root;
   }
   if(left<right){
     data max,min;
     tree_node *root;
-    int index_split, dim = right - left + 1, left_dim, right_dim;
-    find_max_min(&max,&min, set+left, dim);                   // Find max and min in the portion of data considered
+    int index_split, dim = right - left , left_dim, right_dim;
+    find_max_min(&max,&min, set+left , dim);                   // Find max and min in the portion of data considered
     index_split = split_and_sort(set, max,min,left,right,ax); // Find the index of the splitting value
+    // index_split=right-left/2;
     root = malloc(sizeof(tree_node));
     root -> value = set[index_split];
     root -> AxSplit = ax;
@@ -58,17 +76,18 @@ tree_node* build_tree(data* set, int left,int right,int ax, int depth){
 
     left_dim = (index_split - left);
     right_dim = (right- index_split );
+
     if(left_dim > 0){
       root -> dim_sub_left = left_dim;
     }else {root -> dim_sub_left = 0;}
     if(right_dim > 0){
       root -> dim_sub_right = right_dim;
     }else {root -> dim_sub_right = 0;}
-    #pragma omp task firstprivate(set, left,index_split,ax,depth)
+
+    #pragma omp task firstprivate(left,index_split)
       root -> left = build_tree(set,left,index_split -1, 1-ax,depth+1);
-    #pragma omp task firstprivate(set, left,index_split,ax,depth)
+    #pragma omp task firstprivate(left,index_split)
       root -> right = build_tree(set, index_split+1, right, 1-ax,depth+1);
-    #pragma omp taskwait
     return root;
   }
 }

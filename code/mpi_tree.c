@@ -95,12 +95,9 @@ node* build_mpi_tree(data* set, int dim){
 
   node* tree;
 
-  #pragma omp parallel
-  {
-     // printf("Sono il processo %d e thread %d \n", rank, omp_get_thread_num());
-    #pragma omp single
+ 
     tree=build_omp_tree(set,dim,1-split,depth);                          // Each MPI process build its tree in a multi-threading way
-  }
+ 
 
 
   // for(int i=0; i<size; i++){
@@ -151,7 +148,7 @@ node* build_mpi_tree(data* set, int dim){
         merge_array[0].left = 1;
         merge_array[0].right = dim + 1;
         k++;
-        tree = expand(tree, rcv_array, merge_array, dim, rcv_dim);              // Merge the father with the left-subtree and the right-subtree
+        tree = expand_omp(tree, rcv_array, merge_array, dim, rcv_dim);              // Merge the father with the left-subtree and the right-subtree
         dim = rcv_dim+dim+1;                                                    // Update the dimension of the tree
       }
     }else if(check == FALSE){    //mando a rank-step

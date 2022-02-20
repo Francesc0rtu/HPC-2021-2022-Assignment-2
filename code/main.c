@@ -3,7 +3,7 @@
 #include <mpi.h>
 #include <omp.h>
 
-void init_random_set(int dim);
+data* init_random_set(int dim);
 
 int main(int argc, char* argv[]){
   int rank,size, provided = 0;
@@ -17,13 +17,13 @@ int main(int argc, char* argv[]){
   data* set;
 
   if(rank == 0){
-    init_random_set(dim);
-    set = malloc(sizeof(data)*dim);
-    input = fopen("../input/input", "r");
-    for(int i=0; i<dim; i++){
-      fscanf(input, "%f %f", &set[i].x, &set[i].y);
-    }
-    fclose(input);
+    set=init_random_set(dim);
+  
+  // input = fopen("../input/input", "r");
+  //   for(int i=0; i<dim; i++){
+  //     fscanf(input, "%f %f", &set[i].x, &set[i].y);
+  //   }
+  //   fclose(input);
   }
 
   if(rank == 0){
@@ -51,7 +51,7 @@ int main(int argc, char* argv[]){
   if(rank == 0){
     // print_tree_ascii(tree, dim, 0);
     fptr = fopen("../output/time", "a");
-    fprintf(fptr,"\t%f\n", end_time);
+    fprintf(fptr,"\t%f \n", end_time);
     fclose(fptr);
 
     if(dim < 100){
@@ -63,17 +63,21 @@ int main(int argc, char* argv[]){
 }
 
 
-void init_random_set(int dim){
+data* init_random_set(int dim){
   float_t x;
   float_t y;
-
-  FILE *out;
-  out =fopen("../input/input", "w" );
+  data* set; 
+  set = malloc(sizeof(data)*dim);
+  // FILE *out;
+  // out =fopen("../input/input", "w" );
   srand(time(NULL));
   for (size_t i = 0; i < dim; i++) {
     x = rand() / (float_t) 100000;
     y = rand() / (float_t) 100000;
-    fprintf(out, "%f %f\n", x,y);
+    // fprintf(out, "%f %f\n", x,y);
+    set[i].x = x;
+    set[i].y = y;
   }
-  fclose(out);
+  // fclose(out);
+  return set;
 }
