@@ -91,7 +91,9 @@ node* build_mpi_tree(data* set, int dim){
    fclose(fptr);
  }
  //////////////////////////////////// SINGLE PROCESS BUIDLING TREE ////////////////////////////////////////////
+
   node* tree;
+  MPI_Barrier(MPI_COMM_WORLD);
   omp_time = MPI_Wtime();
   #pragma omp parallel
   {
@@ -99,7 +101,7 @@ node* build_mpi_tree(data* set, int dim){
     #pragma omp single
     tree=build_omp_tree(set, 0,dim-1,1-split,depth);                          // Each MPI process build its tree in a multi-threading way
   }
-  MPI_Barrier(MPI_COMM_WORLD);
+  
   omp_time = MPI_Wtime() - omp_time;
   if(rank == 0){
     fptr = fopen("../output/time", "a");

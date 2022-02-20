@@ -27,7 +27,7 @@ node* build_omp_tree(data* set, int left,int right,int ax, int depth){
   // it will be considered, the ax of the splitting and the depth of the tree.
 
   int rank; MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  printf("Processo: %d, thread=%d, CPU=%d \n", rank, omp_get_thread_num(), sched_getcpu());
+  
 
   if(left==right){  // If left == right it returns a leaf
     node* aux;
