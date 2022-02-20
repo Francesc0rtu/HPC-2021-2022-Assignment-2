@@ -68,9 +68,6 @@ void find_max_min(data* max,data* min, data* set, int dim){
 
 
   float_t max_x = set[0].x , max_y = set[0].y, min_x = set[0].x , min_y = set[0].y;
-  #pragma omp parallel
-  {
-    #pragma omp for reduction(min:min_x, min_y) reduction(max:max_x,max_y)
     for(size_t i = 0; i < dim; i++){
       if(set[i].x < min_x){
         min_x = set[i].x;
@@ -89,8 +86,6 @@ void find_max_min(data* max,data* min, data* set, int dim){
     max->y = max_y;
     min->x = min_x;
     min->y = min_y;
-
-}
 
 }
 
@@ -150,61 +145,23 @@ int find_split_index(data* set, float_t target, int left, int right, int ax){
   int dim;
   if(ax == X){
     float_t x = dist(set[index].x, target);
-
-    // Each thread will select the better index for different part of the data-set,
-    // then the master select the best among these ones.
-    #pragma omp parallel shared(dim, local_index)
-    {
-      #pragma omp single
-      {
-        dim=omp_get_num_threads();
-        local_index = malloc(sizeof(int)*dim);     // A single thread allocate an array where each thread will
-                                                   // store its index.
-      }
-      #pragma omp for
       for(int i=left; i<=right; i++){           // Each thread find its index on its portion of data
         if(dist(set[i].x, target) < x){
          index = i;
-         x = dist(set[index].x, target);
+         x = dist(set[i].x, target);
         }
       }
-      local_index[omp_get_thread_num()] = index;
     }
-
-    index = local_index[0];
-    for(int i=0; i<dim; i++){     // Master thread select the best index
-      if(dist(set[local_index[i]].x, target) < dist(set[index].x, target)){
-        index = local_index[i];
-      }
-    }
-  }
   if(ax == Y){      // The same routine as above but with y ax instead of x
     float_t x = dist(set[index].x, target);
-    #pragma omp parallel shared(dim, local_index)
-    {
-      #pragma omp single
-      {
-        dim=omp_get_num_threads();
-        local_index = malloc(sizeof(int)*dim);
-      }
-      #pragma omp for
       for(int i=left; i<=right; i++){
         if(dist(set[i].y, target) < x){
-         index = i;
-         x = dist(set[index].y, target);
+          index = i;
+          x = dist(set[i].y, target);
         }
       }
-      local_index[omp_get_thread_num()] = index;
     }
 
-    index = local_index[0];
-    for(int i=0; i<dim; i++){
-      if(dist(set[local_index[i]].y, target) < dist(set[index].y, target)){
-        index = local_index[i];
-      }
-    }
-  }
-  free(local_index);
   return index;
 }
 
@@ -231,12 +188,9 @@ node* expand(node* left_tree, node* right_tree, node* tree, int dim,int rcv_dim)
   //
 
 
-  #pragma omp parallel
-  {
-    #pragma omp for
+
     for(int i=0; i<dim; i++){
       tree[i+1] = left_tree[i];       // Copy left_tree in the first part of tree
-
       if(tree[i+1].left != -1){
         tree[i+1].left = tree[i+1].left + 1; // Update the index of the left child of the node in tree
       }
@@ -244,10 +198,8 @@ node* expand(node* left_tree, node* right_tree, node* tree, int dim,int rcv_dim)
         tree[i+1].right = tree[i+1].right + 1;  // Update the index of the right child of the node in tree
       }
     }
-    #pragma omp for
     for(int i=0; i<rcv_dim; i++){
       tree[i+dim+1] = right_tree[i];    // Copy right_tree in the second part of the tree
-
       if(tree[i+dim+1].left != -1){
         tree[i+dim+1].left = tree[i+dim+1].left + dim + 1;    // Update the index of the left child of the node in tree
       }
@@ -255,7 +207,7 @@ node* expand(node* left_tree, node* right_tree, node* tree, int dim,int rcv_dim)
         tree[i+dim+1].right = tree[i+dim+1].right + dim + 1;  // Update the index of the right child of the node in tree
       }
     }
-  }
+
   if(dim > 0){
     free(left_tree);
   }

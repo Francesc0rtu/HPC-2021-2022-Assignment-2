@@ -1,0 +1,4 @@
+/var/spool/pbs/mom_priv/jobs/79768.login.hpc.SC: line 7: [: ==: unary operator expected
+loading dependency gnu/9.3.0
+loading dependency numactl/2.0.13
+loading dependency hwloc/2.2.0
