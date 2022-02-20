@@ -226,14 +226,14 @@ void swap(data* x, data* y){
 node* expand(node* left_tree, node* right_tree, node* tree, int dim,int rcv_dim){
   // This function will store in tree the merge between left_tree and right_tree.
   //                      ------------------------------------------
-  //   tree ----->> || [ right_tree ]     |   [ left_tree ] ||
+  //   tree ----->> || [ left_tree ]     |   [ right_tree ] ||
   //                      ------------------------------------------
   //
 
 
-  // #pragma omp parallel
-  // {
-  //   #pragma omp for
+  #pragma omp parallel
+  {
+    #pragma omp for
     for(int i=0; i<dim; i++){
       tree[i+1] = left_tree[i];       // Copy left_tree in the first part of tree
 
@@ -244,7 +244,7 @@ node* expand(node* left_tree, node* right_tree, node* tree, int dim,int rcv_dim)
         tree[i+1].right = tree[i+1].right + 1;  // Update the index of the right child of the node in tree
       }
     }
-    // #pragma omp for
+    #pragma omp for
     for(int i=0; i<rcv_dim; i++){
       tree[i+dim+1] = right_tree[i];    // Copy right_tree in the second part of the tree
 
@@ -255,7 +255,7 @@ node* expand(node* left_tree, node* right_tree, node* tree, int dim,int rcv_dim)
         tree[i+dim+1].right = tree[i+dim+1].right + dim + 1;  // Update the index of the right child of the node in tree
       }
     }
-  // }
+  }
   if(dim > 0){
     free(left_tree);
   }
