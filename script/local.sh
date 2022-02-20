@@ -14,7 +14,7 @@ else
     for j in {1..16}
     do
 	export OMP_NUM_THREADS=${j}
-      mpirun -np 16  ./kdtree.x 10000000 > "../output/output_${i}_${j}"
+      ./kdtree.x 1000000 > "../output/output_${i}_${j}"
       cat ../output/time >> ../output/time.csv
     done
   done
