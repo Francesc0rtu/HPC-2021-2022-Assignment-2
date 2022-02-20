@@ -1,0 +1,389 @@
+/var/spool/pbs/mom_priv/jobs/80080.login.hpc.SC: line 7: [: ==: unary operator expected
+loading dependency gnu/9.3.0
+loading dependency numactl/2.0.13
+loading dependency hwloc/2.2.0
+omp_tree.c: In function ‘build_omp_tree’:
+omp_tree.c:29:103: warning: implicit declaration of function ‘sched_getcpu’; did you mean ‘sched_getparam’? [-Wimplicit-function-declaration]
+   29 |   printf("Sono il processo %d e thread %d, cpu_num=%d:vettore [%d,%d] \n", rank, omp_get_thread_num(),sched_getcpu() ,left,right);
+      |                                                                                                       ^~~~~~~~~~~~
+      |                                                                                                       sched_getparam
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
+
+libgomp: Invalid value for environment variable OMP_PLACES
