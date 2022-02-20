@@ -178,10 +178,10 @@ void swap(data* x, data* y){
   *x = *y;
   *y = tmp;
 }
-/////////////////// TREE TO ARRAY AND VICEVERSA /////////////////////
+
 
 node* expand(node* left_tree, node* right_tree, node* tree, int dim,int rcv_dim){
-  // This function will store in tree the merge between left_tree and right_tree.
+  // This function merge two array-tree in a single one
   //                      ------------------------------------------
   //   tree ----->> || [ left_tree ]     |   [ right_tree ] ||
   //                      ------------------------------------------

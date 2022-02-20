@@ -1,8 +1,17 @@
+#if defined(__STDC__)
+#  if (__STDC_VERSION__ >= 199901L)
+#     define _XOPEN_SOURCE 700
+#  endif
+#endif
 #include<stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
 #include <omp.h>
-#include<time.h>
+#include <time.h>
+#include <sched.h>
+
+
+#define CPU_TIME (clock_gettime( CLOCK_REALTIME, &ts ), (double)ts.tv_sec+(double)ts.tv_nsec*1e-9)
 
 #if !defined(DOUBLE_PRECISION)
 #define float_t float
@@ -10,7 +19,6 @@
 #define float_t double
 #endif
 
-// #define float_t int
 
 #if !defined(DOUBLE_PRECISION)
 #define MPI_FLOAT_T MPI_FLOAT
@@ -43,7 +51,7 @@ int right;
 
 
 
-//////////////////////// HEADER /////////////////////////
+//////////////////////// DECLARATION /////////////////////////
 void print(data* set, int dim);
 void print_tree(node* array, int dim);
 void print_tree_ascii(node* root, int space, int i);

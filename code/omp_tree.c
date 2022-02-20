@@ -1,56 +1,57 @@
-#define _POSIX_C_SOURCE 199309L
 #include "utilities.h"
-#include "utilities_omp.h"
 #include "omp_tree.h"
-#include <unistd.h>
-#include <sched.h>
-#include <time.h>
-#include <stdlib.h>
 
-#define CPU_TIME (clock_gettime( CLOCK_REALTIME, &ts ), (double)ts.tv_sec+(double)ts.tv_nsec*1e-9)
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// In this file there are the functions to construct a 2d-tree with openMP.                                  //
+// The structs used only in this file, such the node of a tree and the elements of stack are cointened in   //
+// the respective header "omp_tree.h".                                                                      //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 node* build_omp_tree(data* set,int dim, int ax, int depth){
+  // This function take in input the dataset and the ax of split, then call the build_tree inside a parallel region
+  // that return the tree (build with pointer and struct). Than convert the tree in an array and return this array
+
+
+  int rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);                     // Print time
   tree_node* root;
   node *vtree;
-  int rank;
-  double omp_time, convert_time;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-  omp_time = MPI_Wtime();
-
   struct timespec ts;
-  double tstart, tend;
-  tstart = CPU_TIME;
-  #pragma omp parallel
+  double tstart, tend, omp_time;
+
+  tstart = CPU_TIME;      // start time
+  #pragma omp parallel      
      {
       #pragma omp single
-      root=build_tree(set, 0, dim -1 , ax, depth);
+      root=build_tree(set, 0, dim -1 , ax, depth);      // Return tree
      }
+  tend = CPU_TIME;                  // end time
+  omp_time = tend - tstart;    
+
+  tstart = CPU_TIME;                      // start time to compute conversion time 
+  vtree = malloc(sizeof(node)*dim);       // Allocate array to store the tree
+  tree_to_array(root, vtree, dim);         // Convert tree to array
   tend = CPU_TIME;
-  omp_time = MPI_Wtime() - omp_time;
-
-
-
-  vtree = malloc(sizeof(node)*dim);
-  convert_time = MPI_Wtime();
-  tree_to_array(root, vtree, dim);
-  convert_time = MPI_Wtime() - convert_time ;
 
   if(rank == 0){
     FILE *fptr;
     fptr = fopen("../output/time", "a");
-    fprintf(fptr,"\t%f,\t%f,", tend-tstart, convert_time);
+    fprintf(fptr,"\t%f,\t%f,", omp_time, tend-tstart);
     fclose(fptr);
   }
-  return vtree;
+
+  return vtree;                                     // Return array
 }
 
 tree_node* build_tree(data* set, int left,int right,int ax, int depth){
-  // printf("thread:%d, cpu=%d\n", omp_get_thread_num(), sched_getcpu());
+  // Build in parallel the tree
+
   if(left > right){
     return NULL;
   }
-  if(left==right){
+
+  if(left==right){        // return a leaf
     tree_node *root;
     root = malloc(sizeof(tree_node));
     root -> value = set[left];
@@ -58,10 +59,11 @@ tree_node* build_tree(data* set, int left,int right,int ax, int depth){
     root -> depth = depth;
     root -> dim_sub_left = 0;
     root -> dim_sub_right = 0;
-    root -> left = NULL;  
+    root -> left = NULL;   
     root -> right = NULL;
     return root;
   }
+
   if(left<right){
     data max,min;
     tree_node *root;
@@ -77,14 +79,14 @@ tree_node* build_tree(data* set, int left,int right,int ax, int depth){
     left_dim = (index_split - left);
     right_dim = (right- index_split );
 
-    if(left_dim > 0){
+    if(left_dim > 0){                         // Compute dimension of subtrees--needed to convert tree to array
       root -> dim_sub_left = left_dim;
     }else {root -> dim_sub_left = 0;}
     if(right_dim > 0){
       root -> dim_sub_right = right_dim;
     }else {root -> dim_sub_right = 0;}
 
-    #pragma omp task firstprivate(left,index_split)
+    #pragma omp task firstprivate(left,index_split)       // recursive calls multi-threading
       root -> left = build_tree(set,left,index_split -1, 1-ax,depth+1);
     #pragma omp task firstprivate(left,index_split)
       root -> right = build_tree(set, index_split+1, right, 1-ax,depth+1);
@@ -93,9 +95,23 @@ tree_node* build_tree(data* set, int left,int right,int ax, int depth){
 }
 
 void tree_to_array(tree_node* root, node* vtree, int dim){
-  stack_node* stack; stack=NULL;
-  int i=0, cond=FALSE;
+  // Convert a tree to array with a in-order visit of the tree.
+  // The tree is stored in an array of struct of this type:                              
+  //                                                                                                                       
+  //                      ------------------------------                                                                    
+  //                      |          (x,y)             |                                                                    
+  //  node--------------> ------------------------------                                                                    
+  //                      | left |  right | ax | depth |                                                                    
+  //                      ------------------------------                                                                    
+  //                                                                                                                        
+  // where left and right are the index in the array of the left and right child (-1 if there is no left/right child).      
+  // ax is the axis of splitting and depth is the level of the node in the tree.                                            
+
+
+  stack_node* stack; stack=NULL;  // Initialize a stack
+  int i=0;
   push(&stack, root);
+
   while(stack != NULL){
     tree_node * tmp;
     tmp = pop(&stack);
@@ -103,6 +119,7 @@ void tree_to_array(tree_node* root, node* vtree, int dim){
     vtree[i].AxSplit = tmp -> AxSplit;
     vtree[i].depth = tmp -> depth;
     vtree[i].right = i +1 + tmp->dim_sub_left;
+    
     if(tmp->right != NULL){
       push(&stack, tmp->right);
     }else{
@@ -114,12 +131,13 @@ void tree_to_array(tree_node* root, node* vtree, int dim){
     }else{
       vtree[i].left = -1;
     }
+    free(tmp);
     i++;
-    cond = FALSE;
   }
 }
 
 void push(stack_node** stack, tree_node *point){
+  // Simple push of a stack
   stack_node *new;
   new = malloc(sizeof(stack_node));
   new -> elem = point;
@@ -128,6 +146,7 @@ void push(stack_node** stack, tree_node *point){
 }
 
 tree_node *pop(stack_node** stack){
+  // Simple pop of a stack
   stack_node *aux;
   tree_node* value;
   aux = *stack;

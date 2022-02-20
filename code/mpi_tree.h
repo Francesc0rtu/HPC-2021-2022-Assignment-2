@@ -1,4 +1,4 @@
-
+node* build_omp_tree(data* set, int dim, int ax, int depth);
 node* build_mpi_tree(data* set, int dim);
 int next_step(int step);
 data* resize(data* set, int dim);
