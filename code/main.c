@@ -1,7 +1,6 @@
-#include "utilities.h"
+#include "tree.h"
 #include "main.h"
-#include <limits.h>
-#include <stdint.h>
+
 
 int main(int argc, char* argv[]){
   int rank,size, provided = 0;

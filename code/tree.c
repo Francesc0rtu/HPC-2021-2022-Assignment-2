@@ -1,9 +1,9 @@
-#include "utilities.h"
+#include "tree.h"
 #define COUNT 5
 
 /////////////////////////////// WHAT ARE THESE FUNCTIONS ?? ///////////////////////////
-// In this file there are all the utilities functions used by the other part of the  //
-// program. In the file "utilities.h" there are all the declarantion of struct and   //
+// In this file there are all the utilities functions used by all part of the        //
+// program. In the file "tree.h" there are all the declarantion of struct and         //
 // macro used by the others part of the program.                                     //
 //                                                                                   //
 ///////////////////////////////////////////////////////////////////////////////////////
