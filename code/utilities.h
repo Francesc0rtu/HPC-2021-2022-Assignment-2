@@ -52,12 +52,20 @@ int right;
 
 
 //////////////////////// DECLARATION /////////////////////////
-void print(data* set, int dim);
+void print(data* set, int  dim);
 void print_tree(node* array, int dim);
-void print_tree_ascii(node* root, int space, int i);
-void find_max_min(data* max,data* min, data* set, int dim);
-int split_and_sort(data* set, data min, data max, int left, int right, int ax);
-int find_split_index(data* set, float_t target, int left, int right, int ax);
+void print_tree_ascii(node* root, int space, int  i);
+
+void find_max_min(data* max,data* min, data* set, int  dim);
+int split_and_sort(data* set, data min, data max, int  left, int  right, int ax);
+int find_split_index(data* set, float_t target, int  left, int  right, int ax);
+
+void find_max_min_omp(data* max,data* min, data* set, int  dim);
+int split_and_sort_omp(data* set, data max, data min, int  left, int  right, int ax);
+int find_split_index_omp(data* set, float_t target, int left, int right, int ax);
+
 float_t dist(float_t x, float_t y);
 void swap(data* x, data* y);
-node* expand(node* array_tree, node* rcv_array, node* merge_array, int dim,int rcv_dim);
+
+node* expand_serial(node* left_tree, node* right_tree, node* tree, int  dim,int  rcv_dim);
+node* expand(node* array_tree, node* rcv_array, node* merge_array, int  dim,int  rcv_dim);

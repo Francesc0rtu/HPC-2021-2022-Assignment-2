@@ -19,14 +19,23 @@ else
 
   printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' 'MPI,' 'OMP,' 'Send MSG,' 'OMP time,' 'Array,' 'Recv msg,' 'total time,' 'N,'  > ../output/time_weak.csv
   y=1
-  for j in {1..10}
+  for j in {1..15}
   do
-    ((y=y*10))
-    ((x=y*10000))
+    export    OMP_NUM_THREADS=${j}
+    ((x=j*10000000))
     mpirun -np 4 --map-by socket --mca btl ^openib kdtree.x ${x}
     cat ../output/time >> ../output/time_weak.csv
     echo ${x} >> ../output/time_weak.csv
+    rm ../output/time
+  done
+  export    OMP_NUM_THREADS=4
+  for j in {1..15}
+  do
+    ((x=j*10000000))
+    mpirun -np ${j} --map-by socket --mca btl ^openib kdtree.x ${x}
+    cat ../output/time >> ../output/time_weak.csv
+    echo ${x} >> ../output/time_weak.csv
+    rm ../output/time
   done
 fi
-rm ../output/time
 exit

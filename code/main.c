@@ -1,5 +1,7 @@
 #include "utilities.h"
 #include "main.h"
+#include <limits.h>
+#include <stdint.h>
 
 int main(int argc, char* argv[]){
   int rank,size, provided = 0;
@@ -9,8 +11,7 @@ int main(int argc, char* argv[]){
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);          // Get rank and size
   MPI_Comm_size(MPI_COMM_WORLD, &size);
   FILE *fptr, *input;
-
-  int dim = atoi(argv[1]);
+  int  dim = atoll(argv[1]);
   data* set;
 
   if(rank == 0){                            // Init a random set 
@@ -44,7 +45,8 @@ int main(int argc, char* argv[]){
     fprintf(fptr,"\t%f,\t", end_time);
     fclose(fptr);
     if(dim < 100){
-    print_tree_ascii(tree, dim, 0);
+    print_tree_ascii(tree, 0, 0);
+    print_tree(tree,dim);
   }
   }
 
@@ -52,20 +54,22 @@ int main(int argc, char* argv[]){
 }
 
 
-data* init_random_set(int dim){
+data* init_random_set(int  dim){
   float_t x;
   float_t y;
   data* set; 
-  set = malloc(sizeof(data)*dim);
+  // printf("dim=%zu, sizemax=%zu\n",dim, INT_MAX);
+  set = (data*) malloc(dim*sizeof(data));
+  // set[0];
   // FILE *out;
   // out =fopen("../input/input", "w" );
   srand(time(NULL));
-  for (size_t i = 0; i < dim; i++) {
-    x = rand() / (float_t) 100000;
-    y = rand() / (float_t) 100000;
+  for (int  i = 0; i < dim; i++) {
+    x = rand() / (float_t) 1000000;
+    y = rand() / (float_t) 1000000;
     // fprintf(out, "%f %f\n", x,y);
     set[i].x = x;
-    set[i].y = y;
+    set[i].y = y; 
   }
   // fclose(out);
   return set;

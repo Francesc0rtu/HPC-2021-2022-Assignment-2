@@ -3,8 +3,11 @@
 CC = mpicc
 CFLAGS  = -fopenmp -std=c99
 
-
 all: kdtree
+debug: CFLAGS += -DDEBUG
+debug: kdtree
+double: CFLAGS += -DOUBLE_PRECISION
+double: kdtree
 
 
 kdtree:	main.o utilities.o  mpi_tree.o omp_tree.o

@@ -70,7 +70,6 @@ tree_node* build_tree(data* set, int left,int right,int ax, int depth){
     int index_split, dim = right - left , left_dim, right_dim;
     find_max_min(&max,&min, set+left , dim);                   // Find max and min in the portion of data considered
     index_split = split_and_sort(set, max,min,left,right,ax); // Find the index of the splitting value
-    // index_split=right-left/2;
     root = malloc(sizeof(tree_node));
     root -> value = set[index_split];
     root -> AxSplit = ax;

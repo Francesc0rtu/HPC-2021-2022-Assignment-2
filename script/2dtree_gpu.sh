@@ -25,6 +25,7 @@ else
       export    OMP_NUM_THREADS=${j}
       mpirun -np ${i} --map-by socket --mca btl ^openib kdtree.x 10000000 
       cat ../output/time >> ../output/time_gpu1.csv
+      printf '\n' >> ../output/time_gpu1.csv
     done
   done
 fi
