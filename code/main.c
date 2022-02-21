@@ -41,7 +41,7 @@ int main(int argc, char* argv[]){
 
   if(rank == 0){
     fptr = fopen("../output/time", "a");
-    fprintf(fptr,"\t%f \n", end_time);
+    fprintf(fptr,"\t%f,\t", end_time);
     fclose(fptr);
     if(dim < 100){
     print_tree_ascii(tree, dim, 0);
