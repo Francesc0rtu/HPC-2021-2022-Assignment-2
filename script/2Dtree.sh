@@ -6,25 +6,26 @@
 cd $PBS_O_WORKDIR
 if [ $1 == "--clean" ]; then
   cd ../output
-  rm time* output*
+  rm output*
 else
   cd ../code
   module load openmpi-4.1.1+gnu-9.3.0
   make
-  export    OMP_NUM_THREADS=12
+
   export 		OMP_PLACES=cores
   export 		OMP_PROC_BIND=close
   export		MV2_ENABLE_AFFINITY=0
 
-  printf '%s\t%s\t%s\t%s\t%s\t%s\n' 'MPI process' 'OMP thread' 'Send MSG,' 'OMP time,' 'Recv msg,' 'total time'  > ../output/time.csv
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' 'MPI,' 'OMP,' 'Send MSG,' 'OMP time,' 'Array,' 'Recv msg,' 'total time'  > ../output/time_thin.csv
 
-  for i in  {1..4}
+  for i in  {1..24}
   do
-    for j in {1..12}
+    for j in {1..24}
     do
       export    OMP_NUM_THREADS=${j}
-      mpirun -np ${i} --map-by socket --mca btl ^openib kdtree.x 1000000 > "../output/output_${i}_${j}"
-      cat ../output/time >> ../output/time.csv
+      mpirun -np ${i} --map-by socket --mca btl ^openib kdtree.x 10000000 
+      cat ../output/time >> ../output/time_thin.csv
+      printf '\n' >> ../output/time_thin.csv
     done
   done
 fi
