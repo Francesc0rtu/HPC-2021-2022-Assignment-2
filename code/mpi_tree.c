@@ -2,7 +2,7 @@
 #include "mpi_tree.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// In this MPI part of the program, the tree is saved as an array of struct of this type:                                 //
+// In this part of the program, the tree is saved as an array of struct of this type:                                     //
 //                                                                                                                        //
 //                      ------------------------------                                                                    //
 //                      |          (x,y)             |                                                                    //
@@ -37,8 +37,8 @@ node* build_mpi_tree(data* set, int  dim){
   node split_values[k+1];
 
   ////////////////////////////////////////// DATA DISPLACEMENT WITH TREE-BASED METHOD //////////////////////
-  // In this portion of code the data are divided between all the MPI processes with a tree method.       //
-  // Each time that a process have to send to his child-process,                                          //
+  // In this portion of code the data are divided between all the MPI processes with a tree based method. //
+  // Each time a process have to send to his child-process,                                               //
   // it divide the data in two part and save the split value (that will be a node of the final tree).     //
   // In this way, at the end of this routine each process has received an array of a subset of data-set.  //
   // This is an example with 11 processors:                                                               //

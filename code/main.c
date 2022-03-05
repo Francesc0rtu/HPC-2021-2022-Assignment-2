@@ -6,18 +6,18 @@ int main(int argc, char* argv[]){
   int rank,size, provided = 0;
   struct timespec ts;
   double start_time, end_time;
-  MPI_Init(&argc, &argv);                 // MPI init 
+  MPI_Init(&argc, &argv);                         // MPI init 
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);          // Get rank and size
   MPI_Comm_size(MPI_COMM_WORLD, &size);
   FILE *fptr, *input;
   int  dim = atoll(argv[1]);
   data* set;
 
-  if(rank == 0){                            // Init a random set 
+  if(rank == 0){                              // Init a random set 
     set=init_random_set(dim);
   }
 
-  if(rank == 0){                            // Print in the output file the number of MPI process and OMP threads
+  if(rank == 0){                              // Print in the output file the number of MPI process and OMP threads
     #pragma omp parallel
     {
       #pragma omp single
