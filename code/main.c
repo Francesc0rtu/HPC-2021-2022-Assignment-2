@@ -44,12 +44,13 @@ int main(int argc, char* argv[]){
     fprintf(fptr,"\t%f,\t", end_time);
     fclose(fptr);
     if(dim < 100){
-    print_tree_ascii(tree, 0, 0);
-    print_tree(tree,dim);
-  }
-  print_to_file(tree,dim);
-  free(set);
-  free(tree);
+      print_tree_ascii(tree, 0, 0);
+      print_tree(tree,dim);
+    }
+    if(argv[2] == "--print" )
+     print_to_file(tree,dim);
+    free(set);
+    free(tree);
   }
   MPI_Finalize();
 }
