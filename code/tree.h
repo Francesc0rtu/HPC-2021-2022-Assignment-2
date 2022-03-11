@@ -62,6 +62,7 @@ int right;
 void print(data* set, int  dim);
 void print_tree(node* array, int dim);
 void print_tree_ascii(node* root, int space, int  i);
+void print_to_file(node* array, int dim);
 
 void find_max_min(data* max,data* min, data* set, int  dim);
 int split_and_sort(data* set, data min, data max, int  left, int  right, int ax);

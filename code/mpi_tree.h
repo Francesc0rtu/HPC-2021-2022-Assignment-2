@@ -5,4 +5,3 @@ data* resize(data* set, int  dim);
 MPI_Datatype create_MPI_type_NODE();
 MPI_Datatype create_MPI_type_DATA();
 int initialize_step();
-int number_of_step(int step);

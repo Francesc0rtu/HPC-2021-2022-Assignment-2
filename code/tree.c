@@ -20,7 +20,6 @@ void print(data* set, int  dim){
   }printf("\n");
 }
 
-
 void print_tree_ascii(node *root, int space, int  i){
   // Print a graphical rappresention of the tree in ASCII on standard output.
   // The result is human readable only for a small size of the input ~100-400.
@@ -58,6 +57,15 @@ void print_tree(node* array, int dim){
   }printf("\n");
 }
 
+void print_to_file(node* array, int dim){
+  FILE* ptr;
+  ptr = fopen("../output/tree.csv", "w");
+  fprintf(ptr, "x,y,lf,rh,ax \n");
+  for(int i=0; i<dim; i++){
+    fprintf(ptr, "%f,%f, %d, %d, %d \n", (array[i].value).x, (array[i].value).y, array[i].left,array[i].right,array[i].AxSplit);
+  }
+  fclose(ptr);
+}
 //////////////////// TO COMPUTE SPLIT AND REORGANIZE DATA ////////////////////////
 // This function are used both from the MPI and OMP functions to building the   //
 // tree.                                                                        //

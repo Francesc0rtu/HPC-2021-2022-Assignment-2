@@ -33,7 +33,7 @@ node* build_mpi_tree(data* set, int  dim){
   data max, min;                                                  // Declare and initialize basic variable for the splitting part
   int split = Y,split_index, depth = 0;
   int step=initialize_step();
-  int k = number_of_step(step);
+  int k = step/2 + 1;                                          // I take some
   node split_values[k+1];
 
   ////////////////////////////////////////// DATA DISPLACEMENT WITH TREE-BASED METHOD //////////////////////
@@ -111,6 +111,7 @@ node* build_mpi_tree(data* set, int  dim){
   if(dim>0){
     tree=build_omp_tree(set,dim,1-split,depth);         // Each MPI process build its tree in a multi-threading way
   }
+  
   //////////////////////////////////////// SEND TREES TO THE MASTER //////////////////////////////////////////////
   // At each step half of the MPI processes involved send their tree the other half processes:                  //
   // these ones will merge their tree with the tree recived, and then the step is incremented.                  //
@@ -142,8 +143,8 @@ node* build_mpi_tree(data* set, int  dim){
         MPI_Recv(&rcv_dim, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD, &status);   //Recive the dimension of the tree to merge
        
         #if defined(DEBUG)
-          printf("I'm MPI_rank %d and rcv %d msg from %d. My dim is %d  \n", rank, rank+step, rcv_dim, dim);
-          printf("I am MPI_rank %d rcv to %d, k=%d, split=(%f,%f)\n",rank, rank+step, k,(split_values[k].value).x,(split_values[k].value).y);
+          printf("I'm MPI_rank %d and rcv %d msg from %d. My dim is %d  \n", rank, rcv_dim, rank+step, dim);
+          printf("I am MPI_rank %d rcv from %d, k=%d, split=(%f,%f)\n",rank, rank+step, k,(split_values[k].value).x,(split_values[k].value).y);
         #endif
        
         node *rcv_array, *merge_array;
@@ -222,15 +223,6 @@ int initialize_step(){
   return step;
 }
 
-int number_of_step(int step){
-  int num_step=1;
-  if(step <= 2) {return 0;}
-  while(step != 2){
-    step = step/2;
-    num_step++;
-  }
-  return num_step;
-}
 
 int next_step(int step){
   if(step == 2){                                                              // Compute the next step

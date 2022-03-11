@@ -47,8 +47,10 @@ int main(int argc, char* argv[]){
     print_tree_ascii(tree, 0, 0);
     print_tree(tree,dim);
   }
+  print_to_file(tree,dim);
+  free(set);
+  free(tree);
   }
-
   MPI_Finalize();
 }
 
@@ -64,8 +66,8 @@ data* init_random_set(int  dim){
   // out =fopen("../input/input", "w" );
   srand(time(NULL));
   for (int  i = 0; i < dim; i++) {
-    x = rand() / (float_t) 1000000;
-    y = rand() / (float_t) 1000000;
+    x = rand() / (float_t) 1000;
+    y = rand() / (float_t) 1000;
     // fprintf(out, "%f %f\n", x,y);
     set[i].x = x;
     set[i].y = y; 
