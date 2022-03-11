@@ -22,7 +22,7 @@ else
   for j in {1..24}
   do
     export    OMP_NUM_THREADS=${j}
-    ((x=j*10000000))
+    ((x=2*j*1000000))
     mpirun -np 2 --map-by socket --mca btl ^openib kdtree.x ${x}
     cat ../output/time >> ../output/time_weak_thin.csv
     echo ${x} >> ../output/time_weak_thin.csv
@@ -31,7 +31,7 @@ else
   export    OMP_NUM_THREADS=2
   for j in {1..24}
   do
-    ((x=j*10000000))
+    ((x=2*j*1000000))
     mpirun -np ${j} --map-by socket --mca btl ^openib kdtree.x ${x}
     cat ../output/time >> ../output/time_weak_thin.csv
     echo ${x} >> ../output/time_weak_thin.csv
