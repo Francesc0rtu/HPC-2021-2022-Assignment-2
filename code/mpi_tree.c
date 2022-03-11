@@ -33,7 +33,7 @@ node* build_mpi_tree(data* set, int  dim){
   data max, min;                                                  // Declare and initialize basic variable for the splitting part
   int split = Y,split_index, depth = 0;
   int step=initialize_step();
-  int k = step/2 + 1;                                          // I take some
+  int k = step/2 ;                                     
   node split_values[k+1];
 
   ////////////////////////////////////////// DATA DISPLACEMENT WITH TREE-BASED METHOD //////////////////////
@@ -87,7 +87,7 @@ node* build_mpi_tree(data* set, int  dim){
        MPI_Send(&send_dim, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD);            // Send the dimension of the portion of data to send to the other process
        MPI_Send(set+split_index+1, send_dim, MPI_DATA, rank+step,0, MPI_COMM_WORLD);      // Send the data
 
-       set = resize(set, new_dim);                                              // Resize the data after have sended the right part of the data
+       set = realloc(set, new_dim*sizeof(data));                                              // Resize the data after have sended the right part of the data
        dim = new_dim;
      }
    }else if(rank%step == 0 && rank!= MASTER){                             // This one are the recv processors
@@ -135,7 +135,7 @@ node* build_mpi_tree(data* set, int  dim){
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   MPI_Barrier(MPI_COMM_WORLD);
   mpi_time = CPU_TIME;
-  int  check = FALSE, rcv_dim;
+  int  already_sent = FALSE, rcv_dim;
   step=1; k++;
   while(step<size){
     if(rank%(2*step)==0){                 // This are the receving process
@@ -150,24 +150,23 @@ node* build_mpi_tree(data* set, int  dim){
         node *rcv_array, *merge_array;
         merge_array = malloc(sizeof(node)*(rcv_dim+dim+1));
         merge_array[0]=split_values[k];      
+        merge_array[0].right = -1;
+        merge_array[0].left = -1;
                                             // Allocate memory for the rcv tree for the merged one
         if(rcv_dim > 0){
           rcv_array = malloc(sizeof(node)*rcv_dim);
           MPI_Recv(rcv_array,rcv_dim,MPI_NODE,rank+step,0,MPI_COMM_WORLD,&status);  // Receive the tree
           merge_array[0].right = dim + 1;
-        }else{
-          merge_array[0].right = -1;
         }
+
         if(dim>0){
           merge_array[0].left = 1;
-        }else{
-          merge_array[0].left = -1;
         }
         k++;
-        tree = expand_serial(tree, rcv_array, merge_array, dim, rcv_dim);              // Merge the father with the left-subtree and the right-subtree
+        tree = expand(tree, rcv_array, merge_array, dim, rcv_dim);              // Merge the father with the left-subtree and the right-subtree
         dim = rcv_dim+dim+1;                                                    // Update the dimension of the tree
       }
-    }else if(check == FALSE){    //mando a rank-step
+    }else if(already_sent == FALSE){    //mando a rank-step
 
     #if defined(DEBUG)
       printf("I'm MPI_rank %d and send %d elements to %d\n", rank, dim, rank-step);
@@ -178,7 +177,7 @@ node* build_mpi_tree(data* set, int  dim){
         MPI_Send(tree, dim, MPI_NODE, rank-step, 0, MPI_COMM_WORLD);            // Send the tree
         free(tree);
       }                                                             // Free the memory: now my work is done!!
-      check=TRUE;                                                             // My work is done, I will do nothing anymore!
+      already_sent=TRUE;                                                             // My work is done, I will do nothing anymore!
     }
     step = step*2;
   }
@@ -190,24 +189,6 @@ node* build_mpi_tree(data* set, int  dim){
     fclose(fptr);
   }
   return tree;
-}
-
-data* resize(data* set, int  dim){
-  // This function deleting all the elements in the array set that are an index
-  // greater than dim-1. Than return the pointer to an array with the correct new size.
-  set = realloc(set, dim*sizeof(data));
-  //   data* aux;
-  // aux = malloc(sizeof(data)*dim);
-  
-  // #pragma omp parallel
-  // {
-  //   #pragma omp for
-  //   for(int i=0; i<dim; i++){
-  //     aux[i] = set[i];
-  //   }
-  // }
-  // free(set);
-  return set;
 }
 
 

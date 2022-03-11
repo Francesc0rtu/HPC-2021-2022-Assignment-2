@@ -18,6 +18,7 @@
 #include <limits.h>
 #include <stdint.h>
 
+
 #define CPU_TIME (clock_gettime( CLOCK_REALTIME, &ts ), (double)ts.tv_sec+(double)ts.tv_nsec*1e-9)
 
 #if !defined(DOUBLE_PRECISION)
@@ -75,5 +76,5 @@ int find_split_index_omp(data* set, float_t target, int left, int right, int ax)
 float_t dist(float_t x, float_t y);
 void swap(data* x, data* y);
 
-node* expand_serial(node* left_tree, node* right_tree, node* tree, int  dim,int  rcv_dim); 
-node* expand(node* array_tree, node* rcv_array, node* merge_array, int  dim,int  rcv_dim); //not used
+node* expand_serial(node* left_tree, node* right_tree, node* tree, int  dim,int  rcv_dim); //not used
+node* expand(node* array_tree, node* rcv_array, node* merge_array, int  dim,int  rcv_dim); 
