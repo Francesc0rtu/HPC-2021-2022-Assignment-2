@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -l walltime=02:00:00
 #PBS -q dssc_gpu
-#PBS -l nodes=1:ppn=24
+#PBS -l nodes=1:ppn=48
 
 cd $PBS_O_WORKDIR
 if [ $1 == "--clean" ]; then
