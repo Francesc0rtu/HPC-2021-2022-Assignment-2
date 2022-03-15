@@ -1,42 +1,11 @@
-
 # Parallel 2dtree
-
-This repository contained the parallel implementation of a 2d-tree produced for the Assignment 2 of FHPC course 2021-2022 @ DSSC, Units.
-
-
-## Description of the problem
-Kd-trees are a data structures presented originally by Friedman, Bentley and Finkel in 1977
-to
-represent a set of k-dimensional data in order to make them efficiently searchable.
-
-In spite of its age, or more likely thanks to it and to the large amount of research and improvements
-accumulated in time, kd-trees are still a good pragmatical choice to perform knn (k-nearest
-neighbours) operations in many cases.
-
-In this assignment you are required to write a parallel code that builds a kd-tree for k=2. 
-
-You must
-implement both the MPI and the OpenMP version.
-In order to simplify the task, the following 2 assumptions hold:
-- the data set, and hence the related kd-tree, can be assumed immutable, i.e. you can neglect
-the insertion/deletion operations;
-- the data points can be assumed to be homogeneously distributed in all the k dimensions.
-
-You find a formal introduction
-2
-to kd-trees in the paper “The k-d tree data structure and
-a proof for
-neighborhood computation in expected logarithmic time”.
-
-To have more information about the task visit : https://github.com/Foundations-of-HPC/Foundations_of_HPC_2021/tree/main/Assignment2
-
 
 ## Compile
 To compile execute:
 ```bash
 $ make
 ```
-inside the folder `code`. It is needed OpenMPI and MPI loaded.
+inside the folder code. It is needed OpenMPI and MPI loaded.
 This command produce the executable file named `kdtree.x`.
 
 In order to use `double` instead `float` compile with:
