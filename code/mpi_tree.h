@@ -1,7 +1,6 @@
-
-node* build_mpi_tree(data* set, int dim);
-int next_step(int step);
-data* resize(data* set, int dim);
+node* build_omp_tree(data* set, int dim, int ax, int depth);
+node* build_mpi_tree(data* set, int  dim);
+// int next_step(int step);
 MPI_Datatype create_MPI_type_NODE();
 MPI_Datatype create_MPI_type_DATA();
-void initialize_step(int* step, int *num_step);
+int initialize_step();

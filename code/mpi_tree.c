@@ -1,13 +1,21 @@
-#include "utilities.h"
-#include "utilities_omp.h"
+#include "tree.h"
 #include "mpi_tree.h"
-#include "omp_tree.h"
-#include <unistd.h>
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// In this part of the program, the tree is saved as an array of struct of this type:                                     //
+//                                                                                                                        //
+//                      ------------------------------                                                                    //
+//                      |          (x,y)             |                                                                    //
+//  node--------------> ------------------------------                                                                    //
+//                      | left |  right | ax | depth |                                                                    //
+//                      ------------------------------                                                                    //
+//                                                                                                                        //
+// where left and right are the index in the array of the left and right child (-1 if there is no left/right child).      //
+// ax is the axis of splitting and depth is the level of the node in the tree.                                            //
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-
-node* build_mpi_tree(data* set, int dim){
+node* build_mpi_tree(data* set, int  dim){
   // This function divide the data-set among the MPI process, then each proces builds its tree
   // calling the build_omp_tree routine. Then the MPI process send their subtree to the master.
 
@@ -17,19 +25,20 @@ node* build_mpi_tree(data* set, int dim){
   MPI_Status status;
   MPI_Datatype MPI_DATA = create_MPI_type_DATA();             // Create the MPI type for the struct data
   MPI_Datatype MPI_NODE = create_MPI_type_NODE();             // Create the MPI type for the struct node
+  struct timespec ts;
   double mpi_time, omp_time;
   FILE *fptr;
 
 
   data max, min;                                                  // Declare and initialize basic variable for the splitting part
-  int num_step, step, split = Y,split_index, depth = 0;
-  initialize_step(&step, &num_step);
-  node split_values[num_step];
-  int k = num_step;
-  // printf("k=%d\n",k);
+  int split = Y, split_index, depth = 0;
+  int step = initialize_step();
+  int k = step/2 ;                                     
+  node split_values[ k + 1 ];
+
   ////////////////////////////////////////// DATA DISPLACEMENT WITH TREE-BASED METHOD //////////////////////
-  // In this portion of code the data are divided between all the MPI processes with a tree method.       //
-  // Each time that a process have to send to his child-process,                                          //
+  // In this portion of code the data are divided between all the MPI processes with a tree based method. //
+  // Each time a process have to send to his child-process,                                               //
   // it divide the data in two part and save the split value (that will be a node of the final tree).     //
   // In this way, at the end of this routine each process has received an array of a subset of data-set.  //
   // This is an example with 11 processors:                                                               //
@@ -54,26 +63,31 @@ node* build_mpi_tree(data* set, int dim){
   //                                                                                                      //
   //////////////////////////////////////////////////////////////////////////////////////////////////////////
   MPI_Barrier(MPI_COMM_WORLD);
-  mpi_time = MPI_Wtime();
+  mpi_time = CPU_TIME;
 
   while(step>=1){
    split = 1 - split;
    if(rank%(2*step)==0){                             // This one are the sending processors
      if(rank + step < size){                        // The rcv process must exist
-       find_max_min_omp(&max, &min, set, dim);          // Find max and min in the set, both for x and y
+       find_max_min_omp(&max, &min, set, dim);      // Find max and min in the set, both for x and y
 
        split_index = split_and_sort_omp(set, max, min, 0, dim-1, split);            // Find the index of the splitting value of the set
-       int new_dim = split_index, send_dim = (dim - new_dim -1);
+       int  new_dim = split_index, send_dim = (dim - new_dim -1);
+
 
        split_values[k].value = set[split_index];                                // Save the split value to re-build the tree in the next routine
        split_values[k].AxSplit = split;
        split_values[k].depth = depth ;
+
+      #if defined(DEBUG)
+      printf("i am %d and send to %d, k=%d, (%f,%f)\n",rank,rank+step,k,(split_values[k].value).x,(split_values[k].value).y);
+      #endif
        k--;
 
        MPI_Send(&send_dim, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD);            // Send the dimension of the portion of data to send to the other process
        MPI_Send(set+split_index+1, send_dim, MPI_DATA, rank+step,0, MPI_COMM_WORLD);      // Send the data
 
-       set = resize(set, new_dim);                                              // Resize the data after have sended the right part of the data
+       set = realloc(set, new_dim*sizeof(data));                             // Resize the data after have sended the right part of the data
        dim = new_dim;
      }
    }else if(rank%step == 0 && rank!= MASTER){                             // This one are the recv processors
@@ -81,11 +95,12 @@ node* build_mpi_tree(data* set, int dim){
      set = malloc(sizeof(data)*dim);                                            // Allocate the space for the data
      MPI_Recv(set, dim, MPI_DATA, rank-step,0, MPI_COMM_WORLD, &status);    // Receive the data
    }
-   step = next_step(step);                              // Compute the next step
+  //  step = next_step(step);                              // Compute the next step
+  step = step/2;
    depth++;                                             // At each step the depth become larger
  }
  MPI_Barrier(MPI_COMM_WORLD);
- mpi_time = MPI_Wtime() - mpi_time;
+ mpi_time = CPU_TIME - mpi_time;
  if(rank == 0){
    fptr = fopen("../output/time", "a");
    fprintf(fptr,"\t%f,", mpi_time);
@@ -94,21 +109,10 @@ node* build_mpi_tree(data* set, int dim){
  //////////////////////////////////// SINGLE PROCESS BUIDLING TREE ////////////////////////////////////////////
 
   node* tree;
-
- 
-    tree=build_omp_tree(set,dim,1-split,depth);                          // Each MPI process build its tree in a multi-threading way
- 
-
-
-  // for(int i=0; i<size; i++){
-  //   sleep(1);
-  //   if(rank==i){
-  //     printf("///////////////  %d ////////////// \n",rank);
-  //     print_tree_ascii(tree, 0, 0);
-  //     // print_tree(tree,dim);
-  //   }
-  // }
-
+  if(dim>0){
+    tree=build_omp_tree(set,dim,1-split,depth);         // Each MPI process build its tree in a multi-threading way
+  }
+  
   //////////////////////////////////////// SEND TREES TO THE MASTER //////////////////////////////////////////////
   // At each step half of the MPI processes involved send their tree the other half processes:                  //
   // these ones will merge their tree with the tree recived, and then the step is incremented.                  //
@@ -131,37 +135,55 @@ node* build_mpi_tree(data* set, int dim){
   //                                                                                                            //
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   MPI_Barrier(MPI_COMM_WORLD);
-  mpi_time = MPI_Wtime();
-  int check = FALSE, rcv_dim;
+  mpi_time = CPU_TIME;
+  int  already_sent = FALSE, rcv_dim;
   step=1; k++;
   while(step<size){
-    if(rank%(2*step)==0){                 // This are the receving process
+    if(rank%(2*step)==0){                 // This are the receving processes
       if(rank + step < size){
         MPI_Recv(&rcv_dim, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD, &status);   //Recive the dimension of the tree to merge
-
-        node *rcv_array, *merge_array;                                          // Allocate memory for the rcv tree for the merged one
-        rcv_array = malloc(sizeof(node)*rcv_dim);
+       
+        #if defined(DEBUG)
+          printf("I'm MPI_rank %d and rcv %d msg from %d. My dim is %d  \n", rank, rcv_dim, rank+step, dim);
+          printf("I am MPI_rank %d rcv from %d, k=%d, split=(%f,%f)\n",rank, rank+step, k,(split_values[k].value).x,(split_values[k].value).y);
+        #endif
+       
+        node *rcv_array, *merge_array;
         merge_array = malloc(sizeof(node)*(rcv_dim+dim+1));
+        merge_array[0]=split_values[k];      
+        merge_array[0].right = -1;
+        merge_array[0].left = -1;
+                                            // Allocate memory for the rcv tree for the merged one
+        if(rcv_dim > 0){
+          rcv_array = malloc(sizeof(node)*rcv_dim);
+          MPI_Recv(rcv_array,rcv_dim,MPI_NODE,rank+step,0,MPI_COMM_WORLD,&status);  // Receive the tree
+          merge_array[0].right = dim + 1;
+        }
 
-        MPI_Recv(rcv_array,rcv_dim,MPI_NODE,rank+step,0,MPI_COMM_WORLD,&status);  // Receive the tree
-        merge_array->value = split_values[k].value;    // Assign the father values
-        merge_array[0].left = 1;
-        merge_array[0].right = dim + 1;
+        if(dim>0)
+          merge_array[0].left = 1;
+        
         k++;
-        tree = expand_omp(tree, rcv_array, merge_array, dim, rcv_dim);              // Merge the father with the left-subtree and the right-subtree
+        tree = expand(tree, rcv_array, merge_array, dim, rcv_dim);              // Merge the father with the left-subtree and the right-subtree
         dim = rcv_dim+dim+1;                                                    // Update the dimension of the tree
       }
-    }else if(check == FALSE){    //mando a rank-step
+    }else if(already_sent == FALSE){    //mando a rank-step
+
+    #if defined(DEBUG)
+      printf("I'm MPI_rank %d and send %d elements to %d\n", rank, dim, rank-step);
+    #endif
+
       MPI_Send(&dim,1,MPI_INT, rank-step, 0, MPI_COMM_WORLD);                 //Send the dimension of the tree to send
-      MPI_Send(tree, dim, MPI_NODE, rank-step, 0, MPI_COMM_WORLD);            // Send the tree
-      free(tree);                                                             // Free the memory: now my work is done!!
-      check=TRUE;                                                             // My work is done, I will do nothing anymore!
+      if(dim>0){
+        MPI_Send(tree, dim, MPI_NODE, rank-step, 0, MPI_COMM_WORLD);            // Send the tree
+        free(tree);
+      }                                                             // Free the memory: now my work is done!!
+      already_sent=TRUE;                                                             // My work is done, I will do nothing anymore!
     }
     step = step*2;
   }
   MPI_Barrier(MPI_COMM_WORLD);
-  mpi_time = MPI_Wtime() - mpi_time;
-
+  mpi_time = CPU_TIME - mpi_time;
   if(rank == 0){
     fptr = fopen("../output/time", "a");
     fprintf(fptr,"\t%f,", mpi_time);
@@ -171,50 +193,28 @@ node* build_mpi_tree(data* set, int dim){
 }
 
 
-
-data* resize(data* set, int dim){
-  // This function deleting all the elements in the array set that are an index
-  // greater than dim-1. Than return the pointer to an array with the correct new size.
-  set = realloc(set, dim*sizeof(data));
-
-  // data* aux;
-  // aux = malloc(sizeof(data)*dim);
-  //
-  // #pragma omp parallel
-  // {
-  //   #pragma omp for
-  //   for(int i=0; i<dim; i++){
-  //     aux[i] = set[i];
-  //   }
-  // }
-  // free(set);
-
-  return set;
-}
-
-void initialize_step(int* step, int *num_step){
-  // Basic operation to compute the first value of step and count the number of step
+int initialize_step(){
   int size;
   MPI_Comm_size(MPI_COMM_WORLD, &size);
-  *num_step = 1;
-  *step = 1;
-  if(size > 2){
+  int step=1;
+  if(size>2){
     do{
-      *num_step++;
-      *step = *step*2;
-    }while(2*(*step)<size);
+      step=step*2;
+    }while(2*step<size);
   }
+  return step;
 }
 
-int next_step(int step){
-  if(step == 2){                                                              // Compute the next step
-    return 1;
-  }
-  if(step == 1){
-    return - 1;
-  }
-  return  step = step/2;
-}
+
+// int next_step(int step){
+//   if(step == 2){                                                              // Compute the next step
+//     return 1;
+//   }
+//   if(step == 1){
+//     return - 1;
+//   }
+//   return  step/2;
+// }
 
 MPI_Datatype create_MPI_type_DATA(){
   MPI_Datatype MPI_DATA;
