@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -l walltime=02:00:00
+#PBS -l walltime=03:00:00
 #PBS -q dssc
 #PBS -l nodes=1:ppn=24
 
@@ -24,7 +24,7 @@ else
     for j in {1..24}
     do
       export    OMP_NUM_THREADS=${j}
-      ((x=2*j*1000000))
+      ((x=y*j*1000000))
       mpirun -np ${y} --map-by socket --mca btl ^openib kdtree.x ${x}
       cat ../output/time >> ../output/time_weak_thin.csv
       echo ${x} >> ../output/time_weak_thin.csv

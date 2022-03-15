@@ -21,7 +21,6 @@ node* build_omp_tree(data* set,int dim, int ax, int depth){
   double tstart, tend, omp_time;
 
   tstart = CPU_TIME;      // start time
-  printf("DIM=%d\n", dim);
   #pragma omp parallel      
      {
       #pragma omp single
@@ -30,8 +29,6 @@ node* build_omp_tree(data* set,int dim, int ax, int depth){
 
   tend = CPU_TIME;                  // end time
   omp_time = tend - tstart;    
-  printf("OMP TIME=%f\n", omp_time);
-
   tstart = CPU_TIME;                      // start time to compute the conversion time 
   vtree = malloc(sizeof(node)*dim);       // Allocate array to store the tree
   tree_to_array(root, vtree, dim);         // Convert tree to array
