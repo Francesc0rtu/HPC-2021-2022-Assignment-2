@@ -21,15 +21,18 @@ node* build_omp_tree(data* set,int dim, int ax, int depth){
   double tstart, tend, omp_time;
 
   tstart = CPU_TIME;      // start time
+  printf("DIM=%d\n", dim);
   #pragma omp parallel      
      {
       #pragma omp single
-      root=build_tree(set, 0, dim -1 , ax, depth);      // Return tree
+      root = build_tree(set, 0, dim -1 , ax, depth);      // Return tree
      }
+
   tend = CPU_TIME;                  // end time
   omp_time = tend - tstart;    
+  printf("OMP TIME=%f\n", omp_time);
 
-  tstart = CPU_TIME;                      // start time to compute conversion time 
+  tstart = CPU_TIME;                      // start time to compute the conversion time 
   vtree = malloc(sizeof(node)*dim);       // Allocate array to store the tree
   tree_to_array(root, vtree, dim);         // Convert tree to array
   tend = CPU_TIME;
@@ -68,7 +71,7 @@ tree_node* build_tree(data* set, int left,int right,int ax, int depth){
     data max,min;
     tree_node *root;
     int index_split, dim = right - left , left_dim, right_dim;
-    find_max_min(&max,&min, set+left , dim);                   // Find max and min in the portion of data considered
+    find_max_min(&max,&min, set + left , dim);                   // Find max and min in the portion of data considered
     index_split = split_and_sort(set, max,min,left,right,ax);  // Find the index of the splitting value
     root = malloc(sizeof(tree_node));
     root -> value = set[index_split];
@@ -85,10 +88,10 @@ tree_node* build_tree(data* set, int left,int right,int ax, int depth){
       root -> dim_sub_right = right_dim;
     }else {root -> dim_sub_right = 0;}
 
-    #pragma omp task firstprivate(left,index_split)       // recursive calls multi-threading
-      root -> left = build_tree(set,left,index_split -1, 1-ax,depth+1);
-    #pragma omp task firstprivate(left,index_split)
-      root -> right = build_tree(set, index_split+1, right, 1-ax,depth+1);
+    #pragma omp task firstprivate(left,index_split)           // recursive calls multi-threading
+      root -> left = build_tree(set,left,index_split -1, 1-ax, depth+1);
+    #pragma omp task firstprivate(right,index_split)
+      root -> right = build_tree(set, index_split+1, right, 1-ax, depth+1);
     return root;
   }
 }

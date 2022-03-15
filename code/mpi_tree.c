@@ -31,10 +31,10 @@ node* build_mpi_tree(data* set, int  dim){
 
 
   data max, min;                                                  // Declare and initialize basic variable for the splitting part
-  int split = Y,split_index, depth = 0;
-  int step=initialize_step();
+  int split = Y, split_index, depth = 0;
+  int step = initialize_step();
   int k = step/2 ;                                     
-  node split_values[k+1];
+  node split_values[ k + 1 ];
 
   ////////////////////////////////////////// DATA DISPLACEMENT WITH TREE-BASED METHOD //////////////////////
   // In this portion of code the data are divided between all the MPI processes with a tree based method. //
@@ -69,7 +69,7 @@ node* build_mpi_tree(data* set, int  dim){
    split = 1 - split;
    if(rank%(2*step)==0){                             // This one are the sending processors
      if(rank + step < size){                        // The rcv process must exist
-       find_max_min_omp(&max, &min, set, dim);          // Find max and min in the set, both for x and y
+       find_max_min_omp(&max, &min, set, dim);      // Find max and min in the set, both for x and y
 
        split_index = split_and_sort_omp(set, max, min, 0, dim-1, split);            // Find the index of the splitting value of the set
        int  new_dim = split_index, send_dim = (dim - new_dim -1);
@@ -87,7 +87,7 @@ node* build_mpi_tree(data* set, int  dim){
        MPI_Send(&send_dim, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD);            // Send the dimension of the portion of data to send to the other process
        MPI_Send(set+split_index+1, send_dim, MPI_DATA, rank+step,0, MPI_COMM_WORLD);      // Send the data
 
-       set = realloc(set, new_dim*sizeof(data));                                              // Resize the data after have sended the right part of the data
+       set = realloc(set, new_dim*sizeof(data));                             // Resize the data after have sended the right part of the data
        dim = new_dim;
      }
    }else if(rank%step == 0 && rank!= MASTER){                             // This one are the recv processors
@@ -95,7 +95,8 @@ node* build_mpi_tree(data* set, int  dim){
      set = malloc(sizeof(data)*dim);                                            // Allocate the space for the data
      MPI_Recv(set, dim, MPI_DATA, rank-step,0, MPI_COMM_WORLD, &status);    // Receive the data
    }
-   step = next_step(step);                              // Compute the next step
+  //  step = next_step(step);                              // Compute the next step
+  step = step/2;
    depth++;                                             // At each step the depth become larger
  }
  MPI_Barrier(MPI_COMM_WORLD);
@@ -138,7 +139,7 @@ node* build_mpi_tree(data* set, int  dim){
   int  already_sent = FALSE, rcv_dim;
   step=1; k++;
   while(step<size){
-    if(rank%(2*step)==0){                 // This are the receving process
+    if(rank%(2*step)==0){                 // This are the receving processes
       if(rank + step < size){
         MPI_Recv(&rcv_dim, 1, MPI_INT, rank+step, 0, MPI_COMM_WORLD, &status);   //Recive the dimension of the tree to merge
        
@@ -159,9 +160,9 @@ node* build_mpi_tree(data* set, int  dim){
           merge_array[0].right = dim + 1;
         }
 
-        if(dim>0){
+        if(dim>0)
           merge_array[0].left = 1;
-        }
+        
         k++;
         tree = expand(tree, rcv_array, merge_array, dim, rcv_dim);              // Merge the father with the left-subtree and the right-subtree
         dim = rcv_dim+dim+1;                                                    // Update the dimension of the tree
@@ -205,15 +206,15 @@ int initialize_step(){
 }
 
 
-int next_step(int step){
-  if(step == 2){                                                              // Compute the next step
-    return 1;
-  }
-  if(step == 1){
-    return - 1;
-  }
-  return  step = step/2;
-}
+// int next_step(int step){
+//   if(step == 2){                                                              // Compute the next step
+//     return 1;
+//   }
+//   if(step == 1){
+//     return - 1;
+//   }
+//   return  step/2;
+// }
 
 MPI_Datatype create_MPI_type_DATA(){
   MPI_Datatype MPI_DATA;

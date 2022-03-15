@@ -1,6 +1,6 @@
 /////////////////////////////// ///////////////////////////////////////////////////////
 // In this file there are all the include,macro and declaration used by all          //
-// part of the program.                                                              //
+// files of the folder.                                                              //
 ///////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -66,12 +66,12 @@ void print_tree_ascii(node* root, int space, int  i);
 void print_to_file(node* array, int dim);
 
 void find_max_min(data* max,data* min, data* set, int  dim);
-int split_and_sort(data* set, data min, data max, int  left, int  right, int ax);
-int find_split_index(data* set, float_t target, int  left, int  right, int ax);
+int  split_and_sort(data* set, data min, data max, int  left, int  right, int ax);
+int  find_split_index(data* set, float_t target, int  left, int  right, int ax);
 
 void find_max_min_omp(data* max,data* min, data* set, int  dim);
-int split_and_sort_omp(data* set, data max, data min, int  left, int  right, int ax);
-int find_split_index_omp(data* set, float_t target, int left, int right, int ax);
+int  split_and_sort_omp(data* set, data max, data min, int  left, int  right, int ax);
+int  find_split_index_omp(data* set, float_t target, int left, int right, int ax);
 
 float_t dist(float_t x, float_t y);
 void swap(data* x, data* y);
