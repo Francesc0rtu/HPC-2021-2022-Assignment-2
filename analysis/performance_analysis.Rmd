@@ -1,12 +1,80 @@
----
-title: "HPC2-kdtree"
-author: "Francesco Ortu"
-date: "2/17/2022"
-output: html_document
----
 
-```{r load}
-setwd("~/Repository/HPC-2021-2022-Assignment-2/analysis/")
-time1 <- data.frame(read.csv("../output/time_gpu.csv"))
+### 0.018
+
+
+```{r strong}
+strong_data <- data.frame(read.csv("../output/time_gpu.csv"))
+strong_omp_1 <- strong_data[which(strong_data$MPI == 1),]
+strong_omp_2 <- strong_data[which(strong_data$MPI == 2),]
+strong_omp_4 <- strong_data[which(strong_data$MPI == 4),]
+strong_omp_8 <- strong_data[which(strong_data$MPI == 8),]
+strong_omp_16 <- strong_data[which(strong_data$MPI == 16),]
+
+```
+
+```{r polt strong MPI}
+
+strong_mpi_1 <- strong_data[which(strong_data$OMP == 1),]
+ggplot()+
+  geom_line(aes(x=strong_mpi_1$MPI, y=strong_mpi_1$total.time))
+ggplot()+
+  geom_line(data=strong_data, aes(x=MPI, y=total.time, color=as.factor(OMP), group=as.factor(OMP))) + 
+  geom_point(data=strong_data, aes(x=MPI, y=total.time, color=as.factor(OMP), group=as.factor(OMP))) +
+  scale_color_brewer(palette = "Dark2")
+```
+
+```{r plot strong}
+library(ggplot2)
+ggplot()+
+  geom_point(data = strong_omp_1, aes(x=OMP, y=total.time, color="1 MPI"))+
+  geom_line(data = strong_omp_1,aes(x=OMP, y=total.time, color="1 MPI"))+
+  geom_line(data = strong_omp_1, aes(x=OMP, y=Send.MSG + Recv.msg, color = "1 MPI", linetype="send/recv time"), linetype="dashed")+
+  geom_point(data = strong_omp_2, aes(x=OMP, y=total.time, color="2 MPI"))+
+  geom_line(data = strong_omp_2,aes(x=OMP, y=total.time, color="2 MPI"))+
+  geom_line(data = strong_omp_2, aes(x=OMP, y=Send.MSG + Recv.msg, color = "2 MPI"), linetype="dashed")+
+  geom_point(data = strong_omp_4, aes(x=OMP, y=total.time, color="4 MPI"))+
+  geom_line(data = strong_omp_4, aes(x=OMP, y=total.time, color="4 MPI"))+
+  geom_line(data = strong_omp_4, aes(x=OMP, y=Send.MSG + Recv.msg, color = "4 MPI"), linetype="dashed")+
+   geom_point(data = strong_omp_8, aes(x=OMP, y=total.time, color="8 MPI"))+
+  geom_line(data = strong_omp_8, aes(x=OMP, y=total.time, color="8 MPI"))+
+  geom_line(data = strong_omp_8, aes(x=OMP, y=Send.MSG + Recv.msg, color = "8 MPI"), linetype="dashed")+
+  scale_color_brewer(palette = "Dark2")
+
+
+
+
+ggplot()+
+    geom_point(data = strong_omp_1, aes(x=OMP, y=strong_omp_1$total.time[1]/total.time, color="1 MPI"))+
+  geom_line(data = strong_omp_1,aes(x=OMP, y=strong_omp_1$total.time[1]/total.time, color="1 MPI"))+
+  geom_point(data = strong_omp_2, aes(x=OMP, y=strong_omp_2$total.time[1]/total.time, color="2 MPI"))+
+  geom_line(data = strong_omp_2,aes(x=OMP, y=strong_omp_2$total.time[1]/total.time, color="2 MPI"))+
+  geom_point(data = strong_omp_4, aes(x=OMP, y=strong_omp_4$total.time[1]/total.time, color="4 MPI"))+
+  geom_line(data = strong_omp_4, aes(x=OMP, y=strong_omp_4$total.time[1]/total.time, color="4 MPI"))+
+   geom_point(data = strong_omp_8, aes(x=OMP, y=strong_omp_8$total.time[1]/total.time, color="8 MPI"))+
+  geom_line(data = strong_omp_8, aes(x=OMP, y=strong_omp_8$total.time[1]/total.time, color="8 MPI"))+
+     geom_point(data = strong_omp_16, aes(x=OMP, y=strong_omp_16$total.time[1]/total.time, color="16 MPI"))+
+  geom_line(data = strong_omp_16, aes(x=OMP, y=strong_omp_16$total.time[1]/total.time, color="16 MPI"))+
+  scale_color_brewer(palette = "Dark2")+
+  geom_line(aes(x=strong_omp_1$OMP, y=1/(0.15+0.85/strong_omp_1$OMP)))
+  
+
+
+ggplot(data = strong_omp)+
+  geom_point(aes(x=OMP, y=total.time))+
+  geom_line(aes(x=OMP, y=total.time))
+```
+
+```{r weak}
+weak_data <- data.frame(read.csv("../output/time_weak.csv"))
+
+ggplot()+
+  geom_line(data=weak_data, aes(x=OMP, y=total.time, color=as.factor(MPI), group=as.factor(MPI))) + 
+  geom_point(data=weak_data, aes(x=OMP, y=total.time, color=as.factor(MPI), group=as.factor(MPI))) +
+  geom_line(data=weak_data, aes(x=OMP, y=Send.MSG + Recv.msg, color=as.factor(MPI), group=as.factor(MPI)), linetype="dashed") +
+  scale_color_brewer(palette = "Dark2")
+```
+
+```{r speedup weak}
+
 ```
 

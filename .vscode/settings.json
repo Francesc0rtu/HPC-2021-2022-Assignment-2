@@ -1,6 +1,10 @@
 {
     "files.associations": {
+<<<<<<< HEAD
+        "utilities.h": "c"
+=======
         "utilities.h": "c",
         "tree.h": "c"
+>>>>>>> 426ecb01b85e3b25985932a1f92353ec4ca43147
     }
 }

@@ -12,9 +12,9 @@ else
   module load openmpi-4.1.1+gnu-9.3.0
   make
 
-  export OMP_PLACES=sockets
-  export OMP_PROC_BIND=true
-
+  export 		OMP_PLACES=cores
+  export 		OMP_PROC_BIND=close
+  export		MV2_ENABLE_AFFINITY=0
 
   printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' 'MPI,' 'OMP,' 'Send MSG,' 'OMP time,' 'Array,' 'Recv msg,' 'total time'  > ../output/time_thin.csv
 
@@ -22,7 +22,7 @@ else
   do
     for j in {1..24}
     do
-      export OMP_NUM_THREADS=${j}
+      export    OMP_NUM_THREADS=${j}
       mpirun -np ${i} --map-by socket --mca btl ^openib kdtree.x 10000000 
       cat ../output/time >> ../output/time_thin.csv
       printf '\n' >> ../output/time_thin.csv
