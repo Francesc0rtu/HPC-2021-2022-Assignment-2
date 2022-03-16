@@ -12,12 +12,12 @@ else
   module load openmpi-4.1.1+gnu-9.3.0
   make
 
-  export    OMP_NUM_THREADS=12
+  
   export 		OMP_PLACES=sockets
-  export 		OMP_PROC_BIND=close
-  export		MV2_ENABLE_AFFINITY=0
+  export 		OMP_PROC_BIND=true
+  
 
-  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' 'MPI,' 'OMP,' 'Send MSG,' 'OMP time,' 'Array,' 'Recv msg,' 'total time,' 'N,'  > ../output/time_weak.csv
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' 'MPI,' 'OMP,' 'Send MSG,' 'OMP time,' 'Array,' 'Recv msg,' 'total time,' 'N,'  > ../output/time_weak2.csv
   y=1
   for i in {1..5}
   do
@@ -26,8 +26,8 @@ else
       export    OMP_NUM_THREADS=${j}
       ((x=y*j*1000000))
       mpirun -np ${y} --map-by socket --mca btl ^openib kdtree.x ${x}
-      cat ../output/time >> ../output/time_weak.csv
-      echo ${x} >> ../output/time_weak.csv
+      cat ../output/time >> ../output/time_weak2.csv
+      echo ${x} >> ../output/time_weak2.csv
       rm ../output/time
     done
    ((y=2*y))
@@ -37,8 +37,8 @@ else
   do
     ((x=2*j*1000000))
     mpirun -np ${j} --map-by socket --mca btl ^openib kdtree.x ${x}
-    cat ../output/time >> ../output/time_weak.csv
-    echo ${x} >> ../output/time_weak.csv
+    cat ../output/time >> ../output/time_weak2.csv
+    echo ${x} >> ../output/time_weak2.csv
     rm ../output/time
   done
 fi
