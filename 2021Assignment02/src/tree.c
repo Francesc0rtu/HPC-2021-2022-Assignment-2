@@ -105,20 +105,20 @@ int split_and_sort(data* set, data max, data min, int  left, int  right, int ax)
   int  index = left;
   float_t target;
 
-    target = (max.point[ax]-min.point[ax])/2 + min.point[ax];         // I'm using the assumption that the data-set is distributed equally
-    index = find_split_index(set, target, left, right, ax);  // Find the index of the value closer to the target (aka the median)
-    swap(&set[index], &set[right]);
+  target = (max.point[ax]-min.point[ax])/2 + min.point[ax];         // I'm using the assumption that the data-set is distributed equally
+  index = find_split_index(set, target, left, right, ax);  // Find the index of the value closer to the target (aka the median)
+  swap(&set[index], &set[right]);
 
-    data pivot = set[right];
-    int  i=left -1, j;
-    for(j = left; j <= right - 1; j++ ){
-      if(set[j].point[ax] < pivot.point[ax]){
-        i++;
-        swap(&set[i],&set[j]);
-      }
+  data pivot = set[right];
+  int  i=left -1, j;
+  for(j = left; j <= right - 1; j++ ){
+    if(set[j].point[ax] < pivot.point[ax]){
+      i++;
+      swap(&set[i],&set[j]);
     }
-    swap(&set[i+1], &set[right]);
-    return i+1;
+  }
+  swap(&set[i+1], &set[right]);
+  return i+1;
   
 }
 
@@ -126,18 +126,18 @@ int find_split_index(data* set, float_t target, int  left, int  right, int ax){
 /* This function find the index of the value closer to the target on x or y, depending
 on the ax taken in input. */
 
-  int  index = left;
+int  index = left;
 
 
-    float_t x = dist(set[index].point[ax], target);
-      for(int  i=left; i<=right; i++){           // Each thread find its index on its portion of data
-        if(dist(set[i].point[ax], target) < x){
-         index = i;
-         x = dist(set[i].point[ax], target);
-        }
-      }
+float_t x = dist(set[index].point[ax], target);
+for(int  i=left; i<=right; i++){           // Each thread find its index on its portion of data
+  if(dist(set[i].point[ax], target) < x){
+    index = i;
+    x = dist(set[i].point[ax], target);
+  }
+}
 
-  return index;
+return index;
 }
 
 ///////////////////// PARALLEL OMP IMPLEMENTATION OF SPLITTING AND SORTING FUNCTIONS //////////////
@@ -145,11 +145,10 @@ on the ax taken in input. */
 void find_max_min_omp(data* max,data* min, data* set, int  dim){
   /* Find max and min value of the data-set in input, both on x and y. */
 
-
   float_t max_x = set[0].point[0] , max_y = set[0].point[1], min_x = set[0].point[0] , min_y = set[0].point[1];
   #pragma omp parallel
   {
-    #pragma omp for reduction(min:min_x, min_y) reduction(max:max_x,max_y)
+  #pragma omp for reduction(min:min_x, min_y) reduction(max:max_x,max_y)
     for(int  i = 0; i < dim; i++){
       if(set[i].point[0] < min_x){
         min_x = set[i].point[0];
@@ -164,12 +163,11 @@ void find_max_min_omp(data* max,data* min, data* set, int  dim){
         max_y = set[i].point[1];
       }
     }
-    max->point[0] = max_x;
-    max->point[1] = max_y;
-    min->point[0] = min_x;
-    min->point[1] = min_y;
-
-}
+  }
+  max->point[0] = max_x;
+  max->point[1] = max_y;
+  min->point[0] = min_x;
+  min->point[1] = min_y;
 
 }
 
@@ -181,24 +179,21 @@ int split_and_sort_omp(data* set, data max, data min, int  left, int  right, int
   ax taken in input. */
 
   int index = left;
-
   float_t target;
+  target = (max.point[ax]-min.point[ax])/2 + min.point[ax];         // I'm using the assumption that the data-set is distributed equally
+  index = find_split_index_omp(set, target, left, right, ax);     // Find the index of the value closer to the target (aka the median)
+  swap(&set[index], &set[right]);
 
-
-    target = (max.point[ax]-min.point[ax])/2 + min.point[ax];         // I'm using the assumption that the data-set is distributed equally
-    index = find_split_index_omp(set, target, left, right, ax);  // Find the index of the value closer to the target (aka the median)
-    swap(&set[index], &set[right]);
-
-    data pivot = set[right];
-    int i=left -1, j;
-    for(j = left; j <= right - 1; j++ ){
-      if(set[j].point[ax] < pivot.point[ax]){
-        i++;
-        swap(&set[i],&set[j]);
-      }
+  data pivot = set[right];
+  int i=left -1, j;
+  for(j = left; j <= right - 1; j++ ){
+    if(set[j].point[ax] < pivot.point[ax]){
+      i++;
+      swap(&set[i],&set[j]);
     }
-    swap(&set[i+1], &set[right]);
-    return i+1;
+  }
+  swap(&set[i+1], &set[right]);
+  return i+1;
   
 }
 
@@ -208,33 +203,34 @@ on the ax taken in input. */
 
   int index = left;
   int final_index;
-    float_t x = dist(set[index].point[ax], target);
-    float_t y=x;
+  float_t x = dist(set[index].point[ax], target);
+  float_t y=x;
 
-   /* Each thread will select the better index for different part of the data-set,
-    then the master select the best among these ones. */
+  /* Each thread will select the better index for different part of the data-set,
+  then the master select the best among these ones. */
 
-    #pragma omp parallel shared(final_index,y)
-    {
-      #pragma omp for
-      for(int i=left; i<=right; i++){           // Each thread find its index on its portion of data
-        if(dist(set[i].point[ax], target) < x){
-         index = i;
-         x = dist(set[index].point[ax], target);
-        }
-      }
-      #pragma omp critical
-      {
-        if(dist(set[index].point[ax], target) < y){
-         final_index = index;
-         y = dist(set[index].point[ax], target);
-        }
+  #pragma omp parallel shared(final_index,y)
+  {
+    #pragma omp for
+    for(int i=left; i<=right; i++){           // Each thread find its index on its portion of data
+      if(dist(set[i].point[ax], target) < x){
+        index = i;
+        x = dist(set[index].point[ax], target);
       }
     }
+    #pragma omp critical
+    {
+      if(dist(set[index].point[ax], target) < y){
+        final_index = index;
+        y = dist(set[index].point[ax], target);
+      }
+    }
+  }
 
-  return final_index;
+return final_index;
 }
 
+//////////////////////////////// UTILITIES FUNCTIONS ////////////////////////////////
 
 float_t dist(float_t x, float_t y){
   // Compute the distance between two numbers
@@ -250,6 +246,8 @@ void swap(data* x, data* y){
   *y = tmp;
 }
 
+//////////////////////////////// MERGE-TREE FUNCTIONS //////////////////////////////////
+
 node* expand_serial(node* left_tree, node* right_tree, node* tree, int  dim,int  rcv_dim){
   /* 
   This function merge two array-tree in a single one
@@ -259,25 +257,24 @@ node* expand_serial(node* left_tree, node* right_tree, node* tree, int  dim,int 
   */
 
 
-
-    for(int  i=0; i<dim; i++){
-      tree[i+1] = left_tree[i];       // Copy left_tree in the first part of tree
-      if(tree[i+1].left != -1){
-        tree[i+1].left = tree[i+1].left + 1; // Update the index of the left child of the node in tree
-      }
-      if(tree[i+1].right != -1){
-        tree[i+1].right = tree[i+1].right + 1;  // Update the index of the right child of the node in tree
-      }
+  for(int  i=0; i<dim; i++){
+    tree[i+1] = left_tree[i];       // Copy left_tree in the first part of tree
+    if(tree[i+1].left != -1){
+      tree[i+1].left = tree[i+1].left + 1; // Update the index of the left child of the node in tree
     }
-    for(int  i=0; i<rcv_dim; i++){
-      tree[i+dim+1] = right_tree[i];    // Copy right_tree in the second part of the tree
-      if(tree[i+dim+1].left != -1){
-        tree[i+dim+1].left = tree[i+dim+1].left + dim + 1;    // Update the index of the left child of the node in tree
-      }
-      if(tree[i+dim+1].right != -1){
-        tree[i+dim+1].right = tree[i+dim+1].right + dim + 1;  // Update the index of the right child of the node in tree
-      }
+    if(tree[i+1].right != -1){
+      tree[i+1].right = tree[i+1].right + 1;  // Update the index of the right child of the node in tree
     }
+  }
+  for(int  i=0; i<rcv_dim; i++){
+    tree[i+dim+1] = right_tree[i];    // Copy right_tree in the second part of the tree
+    if(tree[i+dim+1].left != -1){
+      tree[i+dim+1].left = tree[i+dim+1].left + dim + 1;    // Update the index of the left child of the node in tree
+    }
+    if(tree[i+dim+1].right != -1){
+      tree[i+dim+1].right = tree[i+dim+1].right + dim + 1;  // Update the index of the right child of the node in tree
+    }
+  }
 
   if(dim > 0){
     free(left_tree);
@@ -295,7 +292,6 @@ node* expand(node* left_tree, node* right_tree, node* tree, int  dim,int  rcv_di
     tree ----->> || [ left_tree ]     |   [ right_tree ] ||
                        ------------------------------------------
   */
-
 
   #pragma omp parallel
   {
