@@ -1,23 +1,25 @@
 #include "tree.h"
 #include "mpi_tree.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// In this part of the program, the tree is saved as an array of struct of this type:                                     //
-//                                                                                                                        //
-//                      ------------------------------                                                                    //
-//                      |          (x,y)             |                                                                    //
-//  node--------------> ------------------------------                                                                    //
-//                      | left |  right | ax | depth |                                                                    //
-//                      ------------------------------                                                                    //
-//                                                                                                                        //
-// where left and right are the index in the array of the left and right child (-1 if there is no left/right child).      //
-// ax is the axis of splitting and depth is the level of the node in the tree.                                            //
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+
+In this part of the program, the tree is saved as an array of struct of this type:                                     
+                                                                                                                       
+                     ------------------------------                                                                    
+                     |          (x,y)             |                                                                    
+ node--------------> ------------------------------                                                                    
+                     | left |  right | ax | depth |                                                                    
+                     ------------------------------                                                                    
+                                                                                                                        
+ where left and right are the index in the array of the left and right child (-1 if there is no left/right child).      
+ ax is the axis of splitting and depth is the level of the node in the tree.  
+
+*/
 
 
 node* build_mpi_tree(data* set, int  dim){
-  // This function divide the data-set among the MPI process, then each proces builds its tree
-  // calling the build_omp_tree routine. Then the MPI process send their subtree to the master.
+  /* This function divide the data-set among the MPI process, then each proces builds its tree
+   calling the build_omp_tree routine. Then the MPI process send their subtree to the master. */
 
   int rank,size;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -36,32 +38,34 @@ node* build_mpi_tree(data* set, int  dim){
   int k = step/2 ;                                     
   node split_values[ k + 1 ];
 
-  ////////////////////////////////////////// DATA DISPLACEMENT WITH TREE-BASED METHOD //////////////////////
-  // In this portion of code the data are divided between all the MPI processes with a tree based method. //
-  // Each time a process have to send to his child-process,                                               //
-  // it divide the data in two part and save the split value (that will be a node of the final tree).     //
-  // In this way, at the end of this routine each process has received an array of a subset of data-set.  //
-  // This is an example with 11 processors:                                                               //
-  //                                                                                                      //
-  //                                              0                                                       //
-  //                                             / \                                                      //
-  //                                            /   \                                                     //
-  //                                           /     \                                                    //
-  //                                          /       \                                                   //
-  //                                         /         \                                                  //
-  //                                        0           8          --- step==4                            //
-  //                                       / \           \                                                //
-  //                                      /   \           \                                               //
-  //                                     /     \           \                                              //
-  //                                    /       \           \                                             //
-  //                                   0        4           8        --- step==2                          //
-  //                                  / \      / \         / \                                            //
-  //                                 /   \    /   \       /   \                                           //
-  //                                0     2   4    6      8   10      --- step==1                         //
-  //                               / \   / \ / \  / \    / \   |                                          //
-  //                              0  1  2  3 4  5 6  7  8  9  10                                          //
-  //                                                                                                      //
-  //////////////////////////////////////////////////////////////////////////////////////////////////////////
+  /*
+                              DATA DISPLACEMENT WITH TREE-BASED METHOD 
+  In this portion of code the data are divided between all the MPI processes with a tree based method. 
+  Each time a process have to send to his child-process,                                               
+  it divide the data in two part and save the split value (that will be a node of the final tree).     
+  In this way, at the end of this routine each process has received an array of a subset of data-set.  
+  This is an example with 11 processors:                                                               
+                                                                                                       
+                                               0                                                       
+                                              / \                                                      
+                                             /   \                                                     
+                                            /     \                                                    
+                                           /       \                                                   
+                                          /         \                                                  
+                                         0           8          --- step==4                            
+                                        / \           \                                                
+                                       /   \           \                                               
+                                      /     \           \                                              
+                                     /       \           \                                             
+                                    0        4           8        --- step==2                          
+                                   / \      / \         / \                                            
+                                  /   \    /   \       /   \                                           
+                                 0     2   4    6      8   10      --- step==1                         
+                                / \   / \ / \  / \    / \   |                                          
+                               0  1  2  3 4  5 6  7  8  9  10                                          
+                                                                                                       
+*/
+
   MPI_Barrier(MPI_COMM_WORLD);
   mpi_time = CPU_TIME;
 
@@ -111,28 +115,30 @@ node* build_mpi_tree(data* set, int  dim){
   if(dim>0){
     tree=build_omp_tree(set,dim,1-split,depth);         // Each MPI process build its tree in a multi-threading way
   }
-  
-  //////////////////////////////////////// SEND TREES TO THE MASTER //////////////////////////////////////////////
-  // At each step half of the MPI processes involved send their tree the other half processes:                  //
-  // these ones will merge their tree with the tree recived, and then the step is incremented.                  //
-  // This is an example with 8 MPI processes.                                                                   //
-  //                                                                                                            //
-  //                             0     1     2     3     4     5     6     7                                    //
-  //                               \   /       \   /       \   /       \   /                                    //
-  //                                 0           2           4           6          ---- Step=1                 //
-  //                                  \         /             \         /                                       //
-  //                                   \       /               \       /                                        //
-  //                                    \     /                 \     /                                         //
-  //                                       0                       4                ---- step=2                 //
-  //                                        \                     /                                             //
-  //                                         \                   /                                              //
-  //                                          \                 /                                               //
-  //                                           \               /                                                //
-  //                                            \             /                                                 //
-  //                                                  0                           ---- step=4                   //
-  //                                                                                                            //
-  //                                                                                                            //
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /*
+                                            SEND TREES TO THE MASTER 
+  At each step half of the MPI processes involved send their tree the other half processes:                  
+  these ones will merge their tree with the tree recived, and then the step is incremented.                  
+  This is an example with 8 MPI processes.                                                                   
+                                                                                                             
+                              0     1     2     3     4     5     6     7                                    
+                                \   /       \   /       \   /       \   /                                    
+                                  0           2           4           6          ---- Step=1                 
+                                   \         /             \         /                                       
+                                    \       /               \       /                                        
+                                     \     /                 \     /                                         
+                                        0                       4                ---- step=2                 
+                                         \                     /                                             
+                                          \                   /                                              
+                                           \                 /                                               
+                                            \               /                                                
+                                             \             /                                                 
+                                                   0                           ---- step=4                   
+                                                                                                             
+                                                                                                             
+  */
+
   MPI_Barrier(MPI_COMM_WORLD);
   mpi_time = CPU_TIME;
   int  already_sent = FALSE, rcv_dim;
@@ -205,15 +211,6 @@ int initialize_step(){
 }
 
 
-// int next_step(int step){
-//   if(step == 2){                                                              // Compute the next step
-//     return 1;
-//   }
-//   if(step == 1){
-//     return - 1;
-//   }
-//   return  step/2;
-// }
 
 MPI_Datatype create_MPI_type_DATA(){
   MPI_Datatype MPI_DATA;

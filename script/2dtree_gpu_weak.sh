@@ -8,7 +8,6 @@ if [ $1 == "--clean" ]; then
   cd ../output
   rm output*
 else
-  cd ../code
   module load openmpi-4.1.1+gnu-9.3.0
   make
 
@@ -26,9 +25,9 @@ else
       export    OMP_NUM_THREADS=${j}
       ((x=y*j*1000000))
       mpirun -np ${y} --map-by socket --mca btl ^openib kdtree.x ${x}
-      cat ../output/time >> ../output/time_weak2.csv
+      cat time >> ../output/time_weak2.csv
       echo ${x} >> ../output/time_weak2.csv
-      rm ../output/time
+      rm time
     done
    ((y=2*y))
   done
@@ -37,9 +36,9 @@ else
   do
     ((x=2*j*1000000))
     mpirun -np ${j} --map-by socket --mca btl ^openib kdtree.x ${x}
-    cat ../output/time >> ../output/time_weak2.csv
+    cat time >> ../output/time_weak2.csv
     echo ${x} >> ../output/time_weak2.csv
-    rm ../output/time
+    rm time
   done
 fi
 exit

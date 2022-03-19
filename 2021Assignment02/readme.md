@@ -1,11 +1,11 @@
 # Parallel 2dtree
 
 ## Compile
-To compile execute:
+To compile do:
 ```bash
 $ make
 ```
-inside the folder code. It is needed OpenMPI and MPI loaded.
+It is needed OpenMPI and MPI.
 This command produce the executable file named `kdtree.x`.
 
 In order to use `double` instead `float` compile with:
@@ -29,16 +29,16 @@ mpirun -np 4  ./kdtree 100000000
 ```
 
 ## Output
-The program will produce a text file in `output/time` where you can find the time taken in the different part of the program.
+The program will produce a text file `time` where you can find the time taken in the different part of the program.
 
 If the size is $<100$ the program will print the tree in ASCII on standard output.
 
-If you want to print in a file in `output/tree` the tree add `--print` as arguments after the size of the problem:
+If you want to generate a file with the tree saved as csv files add `--print` as arguments after the size of the problem:
 ```bash
-export OMP_NUM_THREADS= 9
 mpirun -np 4  ./kdtree 100000000 --print
 ```
-___WARNING___  : This will take a lot of time and the file produced could be VERY large.
+___WARNING___  : This may take a lot of time and the file produced could be VERY large.
+
 ## Structure of the source code
 | Files | content |
 |--------- | ------------- |

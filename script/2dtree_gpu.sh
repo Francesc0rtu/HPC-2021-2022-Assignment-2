@@ -1,14 +1,13 @@
 #!/bin/bash
 #PBS -l walltime=02:00:00
 #PBS -q dssc_gpu
-#PBS -l nodes=1:ppn=48
+#PBS -l nodes=2:ppn=48
 
 cd $PBS_O_WORKDIR
 if [ $1 == "--clean" ]; then
   cd ../output
   rm output*
 else
-  cd ../code
   module load openmpi-4.1.1+gnu-9.3.0
   make
 
@@ -23,11 +22,10 @@ else
     do
       export OMP_NUM_THREADS=${j}
       mpirun -np ${i} --map-by socket --mca btl ^openib kdtree.x 10000000 
-      cat ../output/time >> ../output/time_gpu2.csv
-      printf '\n' >> ../output/time_gpu2.csv
+      cat time >> ../output/time_gpu2.csv
     done
   done
 fi
  
-rm ../output/time
+rm time
 exit
