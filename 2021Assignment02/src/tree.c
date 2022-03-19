@@ -13,7 +13,7 @@ macro used by the others part of the program.
 /////////////////// PRINT FUNCTIONS ////////////////////
 
 void print(data* set, int  dim){
-  // Print the data-set on standard output
+  // Print the input data-set on standard output
 
   for (int  i = 0; i < dim; i++) {
     printf("(%f,%f), ", set[i].point[0], set[i].point[1]);
@@ -58,6 +58,9 @@ void print_tree(node* array, int dim){
 }
 
 void print_to_file(node* array, int dim){
+  /* Print the tree in a csv file 
+  */
+
   FILE* ptr;
   ptr = fopen("tree.csv", "w");
   fprintf(ptr, "index,  x,y,index_left_child,index_right_child,ax_of_split \n");
@@ -127,8 +130,6 @@ int find_split_index(data* set, float_t target, int  left, int  right, int ax){
 on the ax taken in input. */
 
 int  index = left;
-
-
 float_t x = dist(set[index].point[ax], target);
 for(int  i=left; i<=right; i++){           // Each thread find its index on its portion of data
   if(dist(set[i].point[ax], target) < x){
