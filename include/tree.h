@@ -45,11 +45,10 @@
 ///////////////////////// STRUCT /////////////////////////////////
 
 typedef struct {
-float_t x;
-float_t y;
+float_t point[2];       //point[0] x-component, point[1] y-component
 } data;
 
-typedef struct {
+typedef struct {         // Node of array-tree
 data value;
 int AxSplit;
 int depth;
@@ -59,7 +58,7 @@ int right;
 
 
 
-//////////////////////// DECLARATION /////////////////////////
+//////////////////////// DECLARATIONS /////////////////////////
 void print(data* set, int  dim);
 void print_tree(node* array, int dim);
 void print_tree_ascii(node* root, int space, int  i);

@@ -14,13 +14,13 @@ node* build_omp_tree(data* set,int dim, int ax, int depth){
 
 
   int rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);                     // Print time
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);               
   tree_node* root;
   node *vtree;
   struct timespec ts;
   double tstart, tend, omp_time;
-
   tstart = CPU_TIME;      // start time
+
   #pragma omp parallel      
      {
       #pragma omp single
@@ -90,17 +90,19 @@ tree_node* build_tree(data* set, int left,int right,int ax, int depth){
 }
 
 void tree_to_array(tree_node* root, node* vtree, int dim){
-  // Convert a tree to array with a in-order visit of the tree.
-  // The tree is stored in an array of struct of this type:                              
-  //                                                                                                                       
-  //                      ------------------------------                                                                    
-  //                      |          (x,y)             |                                                                    
-  //  node--------------> ------------------------------                                                                    
-  //                      | left |  right | ax | depth |                                                                    
-  //                      ------------------------------                                                                    
-  //                                                                                                                        
-  // where left and right are the index in the array of the left and right child (-1 if there is no left/right child).      
-  // ax is the axis of splitting and depth is the level of the node in the tree.                                            
+  /*
+  Convert a tree to array with a in-order visit of the tree using a stack.
+  The tree is stored in an array of struct of this type:                              
+                                                                                                                        
+                       ------------------------------                                                                    
+                       |          (x,y)             |                                                                    
+   node--------------> ------------------------------                                                                    
+                       | left |  right | ax | depth |                                                                    
+                       ------------------------------                                                                    
+                                                                                                                         
+  where left and right are the index in the array of the left and right child (-1 if there is no left/right child).      
+  ax is the axis of splitting and depth is the level of the node in the tree.     
+  */                                       
 
 
   stack_node* stack; stack=NULL;  // Initialize a stack
