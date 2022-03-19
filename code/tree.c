@@ -60,7 +60,7 @@ void print_tree(node* array, int dim){
 void print_to_file(node* array, int dim){
   FILE* ptr;
   ptr = fopen("../output/tree.csv", "w");
-  fprintf(ptr, "x,y,lf,rh,ax \n");
+  fprintf(ptr, "x,y,index_left_child,index_right_child,ax_of_split \n");
   for(int i=0; i<dim; i++){
     fprintf(ptr, "%f,%f, %d, %d, %d \n", (array[i].value).x, (array[i].value).y, array[i].left,array[i].right,array[i].AxSplit);
   }
