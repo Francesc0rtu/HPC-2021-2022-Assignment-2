@@ -219,8 +219,8 @@ MPI_Datatype create_MPI_type_DATA(){
   data cell;
   MPI_Aint base_address;
   MPI_Get_address(&cell, &base_address);                                          //Calculate the displacements
-  MPI_Get_address(&cell.x, &displacements[0]);                                    //i.e. Calculate the size in bytes of
-  MPI_Get_address(&cell.y, &displacements[1]);                                    // each block, in this case the size of MPI_FLOAT_T.
+  MPI_Get_address(&cell.point[0], &displacements[0]);                                    //i.e. Calculate the size in bytes of
+  MPI_Get_address(&cell.point[1], &displacements[1]);                                    // each block, in this case the size of MPI_FLOAT_T.
   displacements[0] = MPI_Aint_diff(displacements[0], base_address);               //
   displacements[1] = MPI_Aint_diff(displacements[1], base_address);               //
   MPI_Datatype types[2] = { MPI_FLOAT_T, MPI_FLOAT_T};

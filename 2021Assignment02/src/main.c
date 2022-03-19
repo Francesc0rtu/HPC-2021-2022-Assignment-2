@@ -70,8 +70,8 @@ data* init_random_set(int  dim){
   for (int  i = 0; i < dim; i++) {
     x = rand() / (float_t) 1000;
     y = rand() / (float_t) 1000;
-    set[i].x = x;
-    set[i].y = y; 
+    set[i].point[0] = x;
+    set[i].point[1] = y; 
   }
   return set;
 }

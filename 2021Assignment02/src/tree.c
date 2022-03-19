@@ -16,7 +16,7 @@ void print(data* set, int  dim){
   // Print the data-set on standard output
 
   for (int  i = 0; i < dim; i++) {
-    printf("(%f,%f), ", set[i].x, set[i].y);
+    printf("(%f,%f), ", set[i].point[0], set[i].point[1]);
   }printf("\n");
 }
 
@@ -37,7 +37,7 @@ void print_tree_ascii(node *root, int space, int  i){
   printf("\n");
   for (int  j = COUNT; j < space; j++)
       printf(" ");
-  printf("[(%f,%f),%d,%d]\n", (root[i].value).x, (root[i].value).y, root[i].AxSplit, root[i].depth);
+  printf("[(%f,%f),%d,%d]\n", (root[i].value).point[0], (root[i].value).point[1], root[i].AxSplit, root[i].depth);
 
   // Process left child
   if(root[i].left != -1){
@@ -53,7 +53,7 @@ void print_tree(node* array, int dim){
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   printf("------------%d-----------\n",rank);
   for(int  i=0; i<dim; i++){
-    printf("[%d]_{(%f,%f),lh=%d,rh=%d,ax=%d} ", i,(array[i].value).x, (array[i].value).y, array[i].left,array[i].right,array[i].AxSplit );
+    printf("[%d]_{(%f,%f),lh=%d,rh=%d,ax=%d} ", i,(array[i].value).point[0], (array[i].value).point[1], array[i].left,array[i].right,array[i].AxSplit );
   }printf("\n");
 }
 
@@ -62,7 +62,7 @@ void print_to_file(node* array, int dim){
   ptr = fopen("tree.csv", "w");
   fprintf(ptr, "index,  x,y,index_left_child,index_right_child,ax_of_split \n");
   for(int i=0; i<dim; i++){
-    fprintf(ptr, "%d,    %f,%f, %d, %d, %d \n", i, (array[i].value).x, (array[i].value).y, array[i].left,array[i].right,array[i].AxSplit);
+    fprintf(ptr, "%d,    %f,%f, %d, %d, %d \n", i, (array[i].value).point[0], (array[i].value).point[1], array[i].left,array[i].right,array[i].AxSplit);
   }
   fclose(ptr);
 }
@@ -73,25 +73,25 @@ void find_max_min(data* max,data* min, data* set, int  dim){
   // Find max and min value of the data-set in input, both on x and y.
 
 
-  float_t max_x = set[0].x , max_y = set[0].y, min_x = set[0].x , min_y = set[0].y;
+  float_t max_x = set[0].point[0] , max_y = set[0].point[1], min_x = set[0].point[0] , min_y = set[0].point[1];
     for(int  i = 0; i < dim; i++){
-      if(set[i].x < min_x){
-        min_x = set[i].x;
+      if(set[i].point[0] < min_x){
+        min_x = set[i].point[0];
       }
-      if(set[i].x > max_x){
-        max_x = set[i].x;
+      if(set[i].point[0] > max_x){
+        max_x = set[i].point[0];
       }
-      if(set[i].y < min_y){
-        min_y = set[i].y;
+      if(set[i].point[1] < min_y){
+        min_y = set[i].point[1];
       }
-      if(set[i].y > max_y){
-        max_y = set[i].y;
+      if(set[i].point[1] > max_y){
+        max_y = set[i].point[1];
       }
     }
-    max->x = max_x;
-    max->y = max_y;
-    min->x = min_x;
-    min->y = min_y;
+    max->point[0] = max_x;
+    max->point[1] = max_y;
+    min->point[0] = min_x;
+    min->point[1] = min_y;
 
 }
 
@@ -105,38 +105,21 @@ int split_and_sort(data* set, data max, data min, int  left, int  right, int ax)
   int  index = left;
   float_t target;
 
-  if(ax == X){
-    target = (max.x-min.x)/2 + min.x;         // I'm using the assumption that the data-set is distributed equally
+    target = (max.point[ax]-min.point[ax])/2 + min.point[ax];         // I'm using the assumption that the data-set is distributed equally
     index = find_split_index(set, target, left, right, ax);  // Find the index of the value closer to the target (aka the median)
     swap(&set[index], &set[right]);
 
     data pivot = set[right];
     int  i=left -1, j;
     for(j = left; j <= right - 1; j++ ){
-      if(set[j].x < pivot.x){
+      if(set[j].point[ax] < pivot.point[ax]){
         i++;
         swap(&set[i],&set[j]);
       }
     }
     swap(&set[i+1], &set[right]);
     return i+1;
-  }else{        // The same routine as before with y
-    target = (max.y-min.y)/2 + min.y;
-    index = find_split_index(set, target, left, right, ax);
-
-    swap(&set[index], &set[right]);
-    data pivot = set[right];
-    int  i=left -1, j;
-    for(j = left; j <= right - 1; j++ ){
-      if(set[j].y < pivot.y){
-        i++;
-        swap(&set[i],&set[j]);
-      }
-    }
-    swap(&set[i+1], &set[right]);
-    return i+1;
-
-  }
+  
 }
 
 int find_split_index(data* set, float_t target, int  left, int  right, int ax){
@@ -146,23 +129,13 @@ on the ax taken in input. */
   int  index = left;
 
 
-  if(ax == X){
-    float_t x = dist(set[index].x, target);
+    float_t x = dist(set[index].point[ax], target);
       for(int  i=left; i<=right; i++){           // Each thread find its index on its portion of data
-        if(dist(set[i].x, target) < x){
+        if(dist(set[i].point[ax], target) < x){
          index = i;
-         x = dist(set[i].x, target);
+         x = dist(set[i].point[ax], target);
         }
       }
-    }else{                       // The same routine as above but with y ax instead of x
-    float_t x = dist(set[index].x, target);
-      for(int  i=left; i<=right; i++){
-        if(dist(set[i].y, target) < x){
-          index = i;
-          x = dist(set[i].y, target);
-        }
-      }
-    }
 
   return index;
 }
@@ -173,28 +146,28 @@ void find_max_min_omp(data* max,data* min, data* set, int  dim){
   /* Find max and min value of the data-set in input, both on x and y. */
 
 
-  float_t max_x = set[0].x , max_y = set[0].y, min_x = set[0].x , min_y = set[0].y;
+  float_t max_x = set[0].point[0] , max_y = set[0].point[1], min_x = set[0].point[0] , min_y = set[0].point[1];
   #pragma omp parallel
   {
     #pragma omp for reduction(min:min_x, min_y) reduction(max:max_x,max_y)
     for(int  i = 0; i < dim; i++){
-      if(set[i].x < min_x){
-        min_x = set[i].x;
+      if(set[i].point[0] < min_x){
+        min_x = set[i].point[0];
       }
-      if(set[i].x > max_x){
-        max_x = set[i].x;
+      if(set[i].point[0] > max_x){
+        max_x = set[i].point[0];
       }
-      if(set[i].y < min_y){
-        min_y = set[i].y;
+      if(set[i].point[1] < min_y){
+        min_y = set[i].point[1];
       }
-      if(set[i].y > max_y){
-        max_y = set[i].y;
+      if(set[i].point[1] > max_y){
+        max_y = set[i].point[1];
       }
     }
-    max->x = max_x;
-    max->y = max_y;
-    min->x = min_x;
-    min->y = min_y;
+    max->point[0] = max_x;
+    max->point[1] = max_y;
+    min->point[0] = min_x;
+    min->point[1] = min_y;
 
 }
 
@@ -211,38 +184,22 @@ int split_and_sort_omp(data* set, data max, data min, int  left, int  right, int
 
   float_t target;
 
-  if(ax == X){
-    target = (max.x-min.x)/2 + min.x;         // I'm using the assumption that the data-set is distributed equally
+
+    target = (max.point[ax]-min.point[ax])/2 + min.point[ax];         // I'm using the assumption that the data-set is distributed equally
     index = find_split_index_omp(set, target, left, right, ax);  // Find the index of the value closer to the target (aka the median)
     swap(&set[index], &set[right]);
 
     data pivot = set[right];
     int i=left -1, j;
     for(j = left; j <= right - 1; j++ ){
-      if(set[j].x < pivot.x){
+      if(set[j].point[ax] < pivot.point[ax]){
         i++;
         swap(&set[i],&set[j]);
       }
     }
     swap(&set[i+1], &set[right]);
     return i+1;
-  }else{        // The same routine as before with y
-    target = (max.y-min.y)/2 + min.y;
-    index = find_split_index_omp(set, target, left, right, ax);
-
-    swap(&set[index], &set[right]);
-    data pivot = set[right];
-    int i=left -1, j;
-    for(j = left; j <= right - 1; j++ ){
-      if(set[j].y < pivot.y){
-        i++;
-        swap(&set[i],&set[j]);
-      }
-    }
-    swap(&set[i+1], &set[right]);
-    return i+1;
-
-  }
+  
 }
 
 int find_split_index_omp(data* set, float_t target, int left, int right, int ax){
@@ -251,8 +208,7 @@ on the ax taken in input. */
 
   int index = left;
   int final_index;
-  if(ax == X){
-    float_t x = dist(set[index].x, target);
+    float_t x = dist(set[index].point[ax], target);
     float_t y=x;
 
    /* Each thread will select the better index for different part of the data-set,
@@ -262,44 +218,19 @@ on the ax taken in input. */
     {
       #pragma omp for
       for(int i=left; i<=right; i++){           // Each thread find its index on its portion of data
-        if(dist(set[i].x, target) < x){
+        if(dist(set[i].point[ax], target) < x){
          index = i;
-         x = dist(set[index].x, target);
+         x = dist(set[index].point[ax], target);
         }
       }
       #pragma omp critical
       {
-        if(dist(set[index].x, target) < y){
+        if(dist(set[index].point[ax], target) < y){
          final_index = index;
-         y = dist(set[index].x, target);
+         y = dist(set[index].point[ax], target);
         }
       }
     }
-  }else{      // The same routine as above but with y ax instead of x
-    float_t x = dist(set[index].y, target);
-    float_t y=x;
-
-   /* Each thread will select the better index for different part of the data-set,
-    then the master select the best among these ones. */
-
-    #pragma omp parallel shared(final_index,y)
-    {
-      #pragma omp for
-      for(int i=left; i<=right; i++){           // Each thread find its index on its portion of data
-        if(dist(set[i].y, target) < x){
-         index = i;
-         x = dist(set[index].y, target);
-        }
-      }
-      #pragma omp critical
-      {
-        if(dist(set[index].y, target) < y){
-         final_index = index;
-         y = dist(set[index].y, target);
-        }
-      }
-    }
-  }
 
   return final_index;
 }

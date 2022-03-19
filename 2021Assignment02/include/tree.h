@@ -45,8 +45,7 @@
 ///////////////////////// STRUCT /////////////////////////////////
 
 typedef struct {
-float_t x;
-float_t y;
+float_t point[2];
 } data;
 
 typedef struct {
