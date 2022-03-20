@@ -59,12 +59,12 @@ model <- function(q,p,n=1000000){
 
 ```{r strong}
 strong_data <- data.frame(read.csv("../output/time_gpu2.csv"))
-strong_omp_1 <- strong_data[which(strong_data$MPI == 1),]
-strong_omp_2 <- strong_data[which(strong_data$MPI == 2),]
-strong_omp_4 <- strong_data[which(strong_data$MPI == 4),]
-strong_omp_8 <- strong_data[which(strong_data$MPI == 8),]
-strong_omp_16 <- strong_data[which(strong_data$MPI == 16),]
-strong_omp <- strong_data[which(strong_data$MPI %in% c(1,2,4,8,16)),]
+strong_omp_1 <- strong_data[which(strong_data$MPI == 1 & strong_data$OMP < 25),]
+strong_omp_2 <- strong_data[which(strong_data$MPI == 2 & strong_data$OMP < 25),]
+strong_omp_4 <- strong_data[which(strong_data$MPI == 4 & strong_data$OMP < 25),]
+strong_omp_8 <- strong_data[which(strong_data$MPI == 8 & strong_data$OMP < 25),]
+strong_omp_16 <- strong_data[which(strong_data$MPI == 16 & strong_data$OMP < 25),]
+strong_omp <- strong_data[which(strong_data$MPI %in% c(1,2,4,8,16)) & strong_data$OMP < 25,]
 
 ```
 
@@ -110,14 +110,22 @@ ggsave("../plot/rcv_msg.png",width=15, height = 9, dpi=400)
 library(RColorBrewer)
 
 colnames(strong_data)<-c("MPI","OMP","DivideWork","BuildTree","ConvertArray","ReBuildTree","TotalTime")
-melted <- melt(strong_data[which(strong_data$MPI %in% c(1,2,4,8,16) & strong_data$OMP %in% c(4) ),], id.vars = c("MPI", "OMP","TotalTime"))
+melted <- melt(strong_data[which(strong_data$MPI %in% c(1,2,4,8,16) & strong_data$OMP %in% c(25) ),], id.vars = c("MPI", "OMP","TotalTime"))
+melted1 <- melt(strong_data[which(strong_data$MPI %in% c(1,2,4,8,16) & strong_data$OMP %in% c(27) ),], id.vars = c("MPI", "OMP","TotalTime"))
+
 ggplot(melted, aes(x=as.factor(MPI),fill=variable))+
   geom_bar(stat="identity",aes(y=value))+
    scale_fill_manual(values = brewer.pal(n = 4, name = "Dark2"))+
  labs(x="MPI processes", y="Time (s)",color="OMP") +
   theme(text = element_text(size=20))
 
-ggsave("../plot/percentage_MPI_4omp.png",width=15, height = 9, dpi=400)
+ggplot(melted1, aes(x=as.factor(MPI),fill=variable))+
+  geom_bar(stat="identity",aes(y=value))+
+   scale_fill_manual(values = brewer.pal(n = 4, name = "Dark2"))+
+ labs(x="MPI processes", y="Time (s)",color="OMP") +
+  theme(text = element_text(size=20))
+
+ggsave("../plot/percentage_MPI_27omp.png",width=15, height = 9, dpi=400)
 
 colnames(strong_data)<-c("MPI","OMP","DivideWork","BuildTree","ConvertArray","ReBuildTree","TotalTime")
 melted <- melt(strong_data[which(strong_data$MPI %in% c(4) & strong_data$OMP %in% c(1,2,4,8,16) ),], id.vars = c("MPI", "OMP","TotalTime"))
@@ -240,11 +248,8 @@ geom_line(data=weak_data2,aes(x=OMP,y=model(2,weak_data2$OMP,weak_data2$N), colo
 
 ggsave("../plot/weak_time.png", width=15, height = 9, dpi=400)
 
-ggplot()+
-  geom_line(data=weak_data[1:151,], aes(x=OMP, y=total.time, color=as.factor(MPI), group=as.factor(MPI))) + 
-  geom_point(data=weak_data[1:151,], aes(x=OMP, y=total.time, color=as.factor(MPI), group=as.factor(MPI))) +
-  geom_line(data=weak_data[1:151,], aes(x=OMP, y=model(MPI,OMP,N), color=as.factor(MPI), group=as.factor(MPI)), linetype="dashed") +
-  scale_color_brewer(palette = "Dark2")
+ggplot(data=weak_data[which(weak_data$OMP %in% c(1,2,4,8,16) & weak_data$MPI %in% c(1,2,4,8,16)),]) + geom_line(aes(x=MPI, y=total.time, group=as.factor(OMP), color=as.factor(OMP)),size=s) + scale_color_brewer(palette = "Dark2") + labs(x="MPI processes", y="Total time", color="OMP threads") +  theme(text = element_text(size=20))
+ggsave("../plot/weak_time_MPI.png", width=15, height = 9, dpi=400)
 ```
 
 ```{r speedup weak}
@@ -262,9 +267,12 @@ time_building_tree <- function(p_omp){
 ```{r}
 library(plotly)
 strong <- strong_data[which( (strong_data$MPI == 1 | strong_data$MPI == 2 | strong_data$MPI == 4 | strong_data$MPI == 8 | strong_data$MPI == 16) & (strong_data$OMP== 1 | strong_data$OMP== 2 | strong_data$OMP== 4 | strong_data$OMP== 8| strong_data$OMP== 16)  ), ]
+strong <- weak_data[which(weak_data$MPI %in% c(1,2,4,8,16) & weak_data$OMP %in% c(1,2,4,8,16)),]
+
+
 
 p<-plot_ly() %>% 
-  add_trace(data = strong,  x=strong$MPI, y=strong$OMP, z=strong$total.time, type="mesh3d",  intensity = seq(0, 1, length = 30), color = seq(0, 1, length = 30), colors =colorRamp(c("#49bff5","#4960f5", "#6844d4"))) 
+  add_trace(data = strong,  x=strong$MPI, y=strong$OMP, z=strong$total.time, type="mesh3d",  intensity = seq(0, max(strong$total.time), length = 70), color = seq(0,max(strong$total.time), length = 200), colors =colorRamp(c("#49bff5","#4960f5", "#6844d4"))) 
 
 p   
 axx <- list(
@@ -282,3 +290,6 @@ axz <- list(
 p<- p %>% layout(scene = list(xaxis=axx,yaxis=axy,zaxis=axz))
 p
 ```
+
+
+

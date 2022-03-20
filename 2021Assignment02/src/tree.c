@@ -294,7 +294,7 @@ node* expand(node* left_tree, node* right_tree, node* tree, int  dim,int  rcv_di
                        ------------------------------------------
   */
 
-  #pragma omp parallel
+  #pragma omp parallel firstprivate(tree,dim,rcv_dim,left_tree,right_tree)
   {
     #pragma omp for
     for(int  i=0; i<dim; i++){

@@ -6,7 +6,7 @@ EXE := $(BIN_DIR)/kdtree.x
 SRC := $(wildcard $(SRC_DIR)/*.c)
 OBJ := $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 
-CC = mpicc -fopenmp
+CC = mpicc -fopenmp -std=c99
 CPPFLAGS := -Iinclude -MMD -MP # -I is a preprocessor flag, not a compiler flag
 CFLAGS   := -Wall        
 LDFLAGS  := -Llib              # -L is a linker flag

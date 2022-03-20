@@ -205,6 +205,7 @@ node* build_mpi_tree(data* set, int  dim){
     fprintf(fptr,"\tRe-building time=%f,", mpi_time);
     fclose(fptr);
   }
+  free(set);
   return tree;
 }
 
