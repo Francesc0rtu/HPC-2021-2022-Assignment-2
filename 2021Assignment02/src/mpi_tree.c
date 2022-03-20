@@ -111,11 +111,11 @@ node* build_mpi_tree(data* set, int  dim){
 
  MPI_Barrier(MPI_COMM_WORLD);
  mpi_time = CPU_TIME - mpi_time;
-//  if(rank == 0){
-//    fptr = fopen("time", "a");
-//    fprintf(fptr,"\tSending time=%f,", mpi_time);
-//    fclose(fptr);
-//  }
+ if(rank == 0){
+   fptr = fopen("time", "a");
+   fprintf(fptr,"\tSending time=%f,", mpi_time);
+   fclose(fptr);
+ }
 
  //////////////////////////////////// SINGLE PROCESS BUIDLING TREE ////////////////////////////////////////////
   

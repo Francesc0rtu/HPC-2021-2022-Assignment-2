@@ -23,7 +23,7 @@ int main(int argc, char* argv[]){
       #pragma omp single
       {
         fptr = fopen("time", "w");
-        fprintf(fptr, "MPI=%d,OMP=%d,", size, omp_get_num_threads());
+        fprintf(fptr, "%d,%d,", size, omp_get_num_threads());
         fclose(fptr);
       }
     }
@@ -41,7 +41,7 @@ int main(int argc, char* argv[]){
 
   if(rank == 0){
     fptr = fopen("time", "a");                        
-    fprintf(fptr,"\ttotal time=%f,\t", end_time);         // Print time to file
+    fprintf(fptr,"\t%f\n", end_time);         // Print time to file
     fclose(fptr);
 
     if(dim < 100){

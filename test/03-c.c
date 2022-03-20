@@ -1,19 +1,13 @@
 #include<stdio.h>
 #include <stdlib.h>
+#include <omp.h>
+#include <sched.h>
 
+int main(){
+  
+  #pragma omp parallel
+  {
+  printf("ciao, io sono il thread %d  on CPU:%d  \n", omp_get_thread_num(), sched_getcpu());
+  }
 
-//MACRO
-#ifndef DOUBLE_PRECISION
-#define float_t float
-#else
-#define float_t double
-#endif
-
-int main(int argc, char const *argv[]) {
-  int a;
-  float b;
-  double c;
-  scanf("%ld", &a);
-  printf("%ld, float:%ld, double:%ld\n", sizeof(float_t), sizeof(float), sizeof(double));
-  return 0;
 }

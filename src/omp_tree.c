@@ -37,7 +37,7 @@ node* build_omp_tree(data* set,int dim, int ax, int depth){
   if(rank == 0){
     FILE *fptr;
     fptr = fopen("time", "a");
-    fprintf(fptr,"\tOMP time:%f,\tConvert to array time:%f,", omp_time, tend-tstart);
+    fprintf(fptr,"\t%f,\t%f,", omp_time, tend-tstart);
     fclose(fptr);
   }
 
@@ -81,9 +81,9 @@ tree_node* build_tree(data* set, int left,int right,int ax, int depth){
       root -> dim_sub_right = right_dim;
     }else {root -> dim_sub_right = 0;}
 
-    #pragma omp task firstprivate(left,index_split)           // recursive calls multi-threading
+    #pragma omp task firstprivate(left,index_split,ax,depth,set)           // recursive calls multi-threading
       root -> left = build_tree(set,left,index_split -1, 1-ax, depth+1);
-    #pragma omp task firstprivate(right,index_split)
+    #pragma omp task firstprivate(right,index_split,ax,depth,set)
       root -> right = build_tree(set, index_split+1, right, 1-ax, depth+1);
     return root;
   }

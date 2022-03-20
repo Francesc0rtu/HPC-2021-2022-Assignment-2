@@ -210,7 +210,7 @@ on the ax taken in input. */
   /* Each thread will select the better index for different part of the data-set,
   then the master select the best among these ones. */
 
-  #pragma omp parallel shared(final_index,y)
+  #pragma omp parallel shared(final_index,y) firstprivate(index,target,left,right)
   {
     #pragma omp for
     for(int i=left; i<=right; i++){           // Each thread find its index on its portion of data
