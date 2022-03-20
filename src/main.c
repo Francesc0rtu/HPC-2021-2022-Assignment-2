@@ -51,8 +51,8 @@ int main(int argc, char* argv[]){
 
     if(argv[2] != NULL && strcmp(argv[2],"--print") == 0)   //If there is the flag --print, print in a file the tree
       print_to_file(tree,dim);
-
-    free(set);                       // free the dataset
+    printf("size %ld\n",sizeof(data));
+       free(set);                       // free the dataset
     free(tree);                     //free the tree
   }
   MPI_Finalize();
