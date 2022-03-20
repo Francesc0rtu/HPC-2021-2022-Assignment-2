@@ -37,7 +37,7 @@ node* build_omp_tree(data* set,int dim, int ax, int depth){
   if(rank == 0){
     FILE *fptr;
     fptr = fopen("time", "a");
-    fprintf(fptr,"\t%f,\t%f,", omp_time, tend-tstart);
+    fprintf(fptr,"\tOMP time:%f,\tConvert to array time:%f,", omp_time, tend-tstart);
     fclose(fptr);
   }
 
