@@ -68,17 +68,14 @@ node* build_mpi_tree(data* set, int  dim){
 
   MPI_Barrier(MPI_COMM_WORLD);
   mpi_time = CPU_TIME;
-  double time1=0,time2=0;
+
   while(step>=1){
    split = 1 - split;
    if(rank%(2*step)==0){                             // This one are the sending processors
 
     if(rank + step < size){
-
       find_max_min_omp(&max, &min, set, dim);      // Find max and min in the set, both for x and y
       split_index = split_and_sort_omp(set, max, min, 0, dim-1, split);            // Find the index of the splitting value of the set
-      
-
       int  new_dim = split_index, send_dim = (dim - new_dim -1);
 
       split_values[k].value = set[split_index];                                // Save the split value to re-build the tree in the next routine
@@ -111,12 +108,12 @@ node* build_mpi_tree(data* set, int  dim){
   step = step/2;
   depth++;                                             // At each step the depth become larger
  }
+
  MPI_Barrier(MPI_COMM_WORLD);
  mpi_time = CPU_TIME - mpi_time;
  if(rank == 0){
-
    fptr = fopen("time", "a");
-   fprintf(fptr,"\t%f,", mpi_time);
+   fprintf(fptr,"\tSending time=%f,", mpi_time);
    fclose(fptr);
  }
 
@@ -205,9 +202,10 @@ node* build_mpi_tree(data* set, int  dim){
   mpi_time = CPU_TIME - mpi_time;
   if(rank == 0){
     fptr = fopen("time", "a");
-    fprintf(fptr,"\t%f,", mpi_time);
+    fprintf(fptr,"\tRe-building time=%f,", mpi_time);
     fclose(fptr);
   }
+  free(set);
   return tree;
 }
 
